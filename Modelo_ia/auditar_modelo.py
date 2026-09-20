@@ -1,6 +1,9 @@
+import os
+os.environ["TF_USE_LEGACY_KERAS"] = "1"  # fuerza a usar Keras 2 (tf-keras) en vez de Keras 3
+
 import tensorflow as tf
 
-MODELO = "Modelo_ia/LSTM_128_128.h5"  # ajusta la ruta si tu archivo está en otro lugar
+MODELO = "Modelo_ia/LSTM_128_128.h5"
 
 modelo = tf.keras.models.load_model(MODELO)
 

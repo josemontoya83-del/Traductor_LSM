@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>P2 — Empathy Map Parser (LSM Escolar)</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen p-6">
+
+  
+  <header class="max-w-7xl mx-auto mb-6 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold text-indigo-900">P2: Empathy Map Parser ("The Parser")</h1>
+        <p class="text-slate-500 text-sm">Proyecto: Traductor de LSM a Texto para Entorno Educativo</p>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="generarInsight()" class="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-lg font-medium shadow transition flex items-center gap-2">
+          💡 Generar Insight
+        </button>
+        <button onclick="exportarJSON()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium shadow transition">
+          📥 Exportar JSON
+        </button>
+        <button onclick="exportarCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium shadow transition">
+          📊 Exportar CSV
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+    
+    <section class="lg:col-span-1 bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col">
+      <h2 class="text-lg font-bold text-slate-700 mb-2 flex items-center gap-2">
+        📥 Bandeja de Entrada
+      </h2>
+      <p class="text-xs text-slate-400 mb-4">Arrastra las frases a los cuadrantes del mapa.</p>
+
+            <!-- Formulario para agregar nuevas frases (CREATE) -->
+      <div class="mb-4 p-3 bg-slate-50 border border-slate-200 rounded-lg shadow-inner">
+        <h3 class="text-sm font-bold text-slate-700 mb-2">➕ Nueva Frase</h3>
+        <input type="text" id="nuevo-usuario" placeholder="Usuario (ej. Alumno Sordo)" class="w-full text-sm p-2 mb-2 border border-slate-300 rounded focus:outline-none focus:border-indigo-500">
+        <textarea id="nueva-frase" placeholder="¿Qué dijo, hizo o pensó?" class="w-full text-sm p-2 mb-2 border border-slate-300 rounded h-16 focus:outline-none focus:border-indigo-500"></textarea>
+        <button onclick="agregarTarjeta()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2 rounded transition shadow-sm">
+          Agregar a la Bandeja
+        </button>
+      </div>
+
+      <div id="inbox" ondragover="allowDrop(event)" ondrop="drop(event)" class="flex-1 space-y-3 min-h-[300px] p-2 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
+        
+        
+        <!-- Tarjeta 1 -->
+        <div id="card-1" draggable="true" ondragstart="drag(event)" data-usuario="Alumno Sordo" class="p-3 bg-white border border-slate-200 rounded-lg shadow-sm cursor-grab active:cursor-grabbing hover:border-indigo-400 transition relative group">
+          <button onclick="borrarTarjeta('card-1')" class="absolute top-2 right-2 text-slate-300 hover:text-red-500 hidden group-hover:block transition text-xs" title="Borrar">❌</button>
+          <span class="text-xs font-semibold text-indigo-600 block mb-1">Alumno Sordo</span>
+          <p class="text-sm text-slate-700">"A veces la cámara de la tablet no capta bien mis manos si entra mucha luz por la ventana del salón."</p>
+        </div>
+
+        <!-- Tarjeta 2 -->
+        <div id="card-2" draggable="true" ondragstart="drag(event)" data-usuario="Maestro Oyente" class="p-3 bg-white border border-slate-200 rounded-lg shadow-sm cursor-grab active:cursor-grabbing hover:border-indigo-400 transition relative group">
+          <button onclick="borrarTarjeta('card-2')" class="absolute top-2 right-2 text-slate-300 hover:text-red-500 hidden group-hover:block transition text-xs" title="Borrar">❌</button>
+          <span class="text-xs font-semibold text-emerald-600 block mb-1">Maestro Oyente</span>
+          <p class="text-sm text-slate-700">"Pierdo mucho tiempo de clase acomodando el dispositivo para que la app lea bien las señas."</p>
+        </div>
+
+        <!-- Tarjeta 3 -->
+        <div id="card-3" draggable="true" ondragstart="drag(event)" data-usuario="Compañero Oyente" class="p-3 bg-white border border-slate-200 rounded-lg shadow-sm cursor-grab active:cursor-grabbing hover:border-indigo-400 transition relative group">
+          <button onclick="borrarTarjeta('card-3')" class="absolute top-2 right-2 text-slate-300 hover:text-red-500 hidden group-hover:block transition text-xs" title="Borrar">❌</button>
+          <span class="text-xs font-semibold text-amber-600 block mb-1">Compañero Oyente</span>
+          <p class="text-sm text-slate-700">"Me quedo viendo la pantalla sin saber si la app sigue procesando el movimiento o si ya se trabó."</p>
+        </div>
+
+        <!-- Tarjeta 4 -->
+        <div id="card-4" draggable="true" ondragstart="drag(event)" data-usuario="Alumno Sordo" class="p-3 bg-white border border-slate-200 rounded-lg shadow-sm cursor-grab active:cursor-grabbing hover:border-indigo-400 transition relative group">
+          <button onclick="borrarTarjeta('card-4')" class="absolute top-2 right-2 text-slate-300 hover:text-red-500 hidden group-hover:block transition text-xs" title="Borrar">❌</button>
+          <span class="text-xs font-semibold text-indigo-600 block mb-1">Alumno Sordo</span>
+          <p class="text-sm text-slate-700">"Cuando deletreo rápido, el sistema se come letras y me frustra tener que repetir todo."</p>
+        </div>
+
+      </div>
+    </section>
+
+    
+    <section class="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+      
+      
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col">
+        <h3 class="font-bold text-indigo-700 flex items-center gap-2 mb-2">🗣️ DICE</h3>
+        <div id="quad-dice" data-cuadrante="dice" ondragover="allowDrop(event)" ondrop="drop(event)" class="flex-1 min-h-[160px] p-2 bg-indigo-50/50 rounded-lg border-2 border-dashed border-indigo-200 space-y-2"></div>
+      </div>
+
+      
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col">
+        <h3 class="font-bold text-sky-700 flex items-center gap-2 mb-2">💭 PIENSA</h3>
+        <div id="quad-piensa" data-cuadrante="piensa" ondragover="allowDrop(event)" ondrop="drop(event)" class="flex-1 min-h-[160px] p-2 bg-sky-50/50 rounded-lg border-2 border-dashed border-sky-200 space-y-2"></div>
+      </div>
+
+      
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col">
+        <h3 class="font-bold text-emerald-700 flex items-center gap-2 mb-2">🛠️ HACE</h3>
+        <div id="quad-hace" data-cuadrante="hace" ondragover="allowDrop(event)" ondrop="drop(event)" class="flex-1 min-h-[160px] p-2 bg-emerald-50/50 rounded-lg border-2 border-dashed border-emerald-200 space-y-2"></div>
+      </div>
+
+      
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col">
+        <h3 class="font-bold text-rose-700 flex items-center gap-2 mb-2">❤️ SIENTE</h3>
+        <div id="quad-siente" data-cuadrante="siente" ondragover="allowDrop(event)" ondrop="drop(event)" class="flex-1 min-h-[160px] p-2 bg-rose-50/50 rounded-lg border-2 border-dashed border-rose-200 space-y-2"></div>
+      </div>
+
+    </section>
+  </main>
+
+  
+  <section id="insight-container" class="max-w-7xl mx-auto mt-6 hidden">
+    <div class="bg-amber-50 border-2 border-amber-300 p-6 rounded-xl shadow-md">
+      <div class="flex justify-between items-start mb-2">
+        <span id="insight-tipo" class="px-3 py-1 bg-amber-200 text-amber-800 font-bold text-xs rounded-full uppercase"></span>
+        <span id="insight-prioridad" class="text-xs font-semibold px-2 py-1 bg-red-100 text-red-700 rounded"></span>
+      </div>
+      <h3 class="text-lg font-bold text-amber-900 mb-1">Insight Generado por el Sistema</h3>
+      <p id="insight-desc" class="text-slate-700 text-sm"></p>
+    </div>
+  </section>
+
+  
+  <script>
+    // 1. Drag & Drop Basico
+    function allowDrop(ev) {
+      ev.preventDefault();
+    }
+
+    function drag(ev) {
+      ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+      ev.preventDefault();
+      const data = ev.dataTransfer.getData("text");
+      const card = document.getElementById(data);
+      let target = ev.target;
+
+      // Asegurar que el drop caiga en el contenedor correcto
+      while (target && !target.hasAttribute("ondrop")) {
+        target = target.parentElement;
+      }
+
+      if (target && card) {
+        target.appendChild(card);
+        const cuadrante = target.getAttribute("data-cuadrante");
+
+        // Si cae en SIENTE, agregamos el control de intensidad
+        if (cuadrante === "siente" && !card.querySelector(".intensity-ctrl")) {
+          const ctrl = document.createElement("div");
+          ctrl.className = "intensity-ctrl mt-2 pt-2 border-t border-rose-100 flex items-center gap-2 text-xs";
+          ctrl.innerHTML = `
+            <label class="font-bold text-rose-700">Intensidad: </label>
+            <input type="range" min="1" max="5" value="4" class="accent-rose-500 w-24" onchange="updateIntensidad(this)">
+            <span class="emoji-val text-base">😰</span>
+          `;
+          card.appendChild(ctrl);
+        }
+      }
+      guardarTablero();
+    }
+
+    function updateIntensidad(slider) {
+      const emojis = ["🙂", "😐", "🙁", "😰", "🤬"];
+      const val = slider.value;
+      slider.nextElementSibling.innerText = emojis[val - 1];
+      guardarTablero();
+    }
+
+    // 2. Generador de Insights
+    // --- GENERADOR DINÁMICO DE INSIGHTS ---
+    function generarInsight() {
+      const data = recolectarDatos(); // Usamos la función que ya tienes para leer las tarjetas
+      const todasLasFrases = [];
+      const usuariosInvolucrados = new Set();
+      let maximaIntensidad = 0;
+      let totalTarjetas = 0;
+
+      // 1. Recorrer los cuadrantes para extraer la información actual
+      for (const [cuadrante, items] of Object.entries(data.cuadrantes)) {
+        items.forEach(item => {
+          todasLasFrases.push(item.frase.toLowerCase());
+          usuariosInvolucrados.add(item.usuario);
+          totalTarjetas++;
+          
+          // Si la tarjeta tiene intensidad (está en SIENTE), evaluamos si es la más alta
+          if (item.intensidad) {
+            const valorIntensidad = parseInt(item.intensidad);
+            if (valorIntensidad > maximaIntensidad) {
+              maximaIntensidad = valorIntensidad;
+            }
+          }
+        });
+      }
+
+      // Validación: Si el tablero está vacío, no generamos nada
+      if (totalTarjetas === 0) {
+        alert("⚠️ Agrega al menos una tarjeta a los cuadrantes para analizar los datos.");
+        return;
+      }
+
+      // 2. Determinar la Prioridad basada en el cuadrante "Siente"
+      let prioridadTxt = "Prioridad: Media 🟡";
+      let clasePrioridad = "bg-yellow-100 text-yellow-800"; // Clases de Tailwind
+      
+      if (maximaIntensidad >= 4) {
+        prioridadTxt = "Prioridad: Alta 🔴";
+        clasePrioridad = "bg-red-100 text-red-800";
+      } else if (maximaIntensidad > 0 && maximaIntensidad <= 2) {
+        prioridadTxt = "Prioridad: Baja 🟢";
+        clasePrioridad = "bg-green-100 text-green-800";
+      }
+
+      // 3. Determinar el Tipo de insight buscando palabras clave
+      const textoCompleto = todasLasFrases.join(" ");
+      let tipo = "Observación General de Comportamiento";
+      let temaPrincipal = "varios aspectos de la experiencia";
+      
+      if (textoCompleto.includes("cámara") || textoCompleto.includes("pantalla") || textoCompleto.includes("app") || textoCompleto.includes("sistema") || textoCompleto.includes("luz")) {
+        tipo = "Fricción Tecnológica / Usabilidad";
+        temaPrincipal = "las limitaciones técnicas del entorno o la plataforma (cámara, procesamiento, interfaz)";
+      } else if (textoCompleto.includes("tiempo") || textoCompleto.includes("clase") || textoCompleto.includes("rápido") || textoCompleto.includes("repetir")) {
+        tipo = "Eficiencia y Flujo Operativo";
+        temaPrincipal = "la interrupción del ritmo natural de sus actividades y la carga de trabajo";
+      } else if (textoCompleto.includes("siento") || textoCompleto.includes("frustra") || textoCompleto.includes("difícil")) {
+        tipo = "Carga Emocional / Frustración";
+        temaPrincipal = "la respuesta emocional ante los obstáculos presentados";
+      }
+
+      // 4. Redactar el texto del insight dinámicamente
+      const usuariosStr = Array.from(usuariosInvolucrados).join(", ");
+      let emocion = "cierta inquietud o duda";
+      
+      if (maximaIntensidad === 5) emocion = "niveles críticos de frustración/enojo";
+      else if (maximaIntensidad === 4) emocion = "altos niveles de estrés y fricción";
+      else if (maximaIntensidad > 0 && maximaIntensidad <= 2) emocion = "actitudes neutrales o positivas";
+
+      const descripcionDinámica = `Tras analizar ${totalTarjetas} interacción(es) en el mapa, se detecta que los perfiles involucrados (${usuariosStr}) experimentan ${emocion} en relación a ${temaPrincipal}. Este patrón sugiere que la intervención de diseño debe enfocarse prioritariamente en resolver este aspecto para mejorar su experiencia.`;
+
+      // 5. Inyectar los datos calculados en el HTML
+      const insightBox = document.getElementById("insight-container");
+      
+      document.getElementById("insight-tipo").innerText = tipo;
+      
+      const etiquetaPrioridad = document.getElementById("insight-prioridad");
+      etiquetaPrioridad.innerText = prioridadTxt;
+      etiquetaPrioridad.className = `text-xs font-semibold px-2 py-1 rounded ${clasePrioridad}`; // Actualiza colores
+      
+      document.getElementById("insight-desc").innerText = descripcionDinámica;
+      
+      // Mostrar la caja
+      insightBox.classList.remove("hidden");
+    }
+
+    // 3. Exportar a JSON
+    function exportarJSON() {
+      const data = recolectarDatos();
+      const jsonStr = JSON.stringify(data, null, 2);
+      descargarArchivo(jsonStr, "empathy_map_LSM.json", "application/json");
+    }
+
+    // 4. Exportar a CSV
+    function exportarCSV() {
+      const data = recolectarDatos();
+      let csv = "Cuadrante,Usuario,Frase,Intensidad\n";
+
+      for (const [cuadrante, items] of Object.entries(data.cuadrantes)) {
+        items.forEach(i => {
+          csv += `"\({cuadrante}","\){i.usuario}","\({i.frase.replace(/"/g, '""')}","\){i.intensidad || 'N/A'}"\n`;
+        });
+      }
+
+      descargarArchivo(csv, "empathy_map_LSM.csv", "text/csv");
+    }
+
+    // Función auxiliar para leer los cuadrantes actuales
+    function recolectarDatos() {
+      const res = { cuadrantes: { dice: [], piensa: [], hace: [], siente: [] } };
+      
+      ["dice", "piensa", "hace", "siente"].forEach(q => {
+        const quad = document.getElementById(`quad-${q}`);
+        const cards = quad.querySelectorAll("[draggable='true']");
+        cards.forEach(c => {
+          const usuario = c.getAttribute("data-usuario");
+          const frase = c.querySelector("p").innerText;
+          const slider = c.querySelector("input[type='range']");
+          
+          res.cuadrantes[q].push({
+            usuario: usuario,
+            frase: frase,
+            ...(slider && { intensidad: slider.value })
+          });
+        });
+      });
+
+      return res;
+    }
+
+    function descargarArchivo(contenido, nombre, tipo) {
+      const blob = new Blob([contenido], { type: tipo });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = nombre;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+  // --- LÓGICA DE LOCALSTORAGE ---
+
+function guardarTablero() {
+  const estado = {};
+  
+  // Recorremos todas las tarjetas arrastrables para guardar su ubicación actual
+  document.querySelectorAll('[draggable="true"]').forEach(card => {
+    const slider = card.querySelector("input[type='range']");
+    estado[card.id] = {
+      ubicacion: card.parentElement.id,
+      intensidad: slider ? slider.value : null
+    };
+  });
+  
+  localStorage.setItem('empathyMapLSM', JSON.stringify(estado));
+}
+
+function cargarTablero() {
+  const guardado = localStorage.getItem('empathyMapLSM');
+  if (!guardado) return; // Si no hay nada guardado, dejamos todo en la bandeja
+
+  const estadoObj = JSON.parse(guardado);
+  
+  for (const [cardId, info] of Object.entries(estadoObj)) {
+    const card = document.getElementById(cardId);
+    const destino = document.getElementById(info.ubicacion);
+    
+    if (card && destino) {
+      destino.appendChild(card); // Movemos la tarjeta a donde estaba
+      
+      // Si la tarjeta estaba en el cuadrante SIENTE, reconstruimos su control de intensidad
+      if (info.ubicacion === "quad-siente") {
+        if (!card.querySelector(".intensity-ctrl")) {
+          const ctrl = document.createElement("div");
+          ctrl.className = "intensity-ctrl mt-2 pt-2 border-t border-rose-100 flex items-center gap-2 text-xs";
+          ctrl.innerHTML = `
+            <label class="font-bold text-rose-700">Intensidad: </label>
+            <input type="range" min="1" max="5" value="${info.intensidad || 4}" class="accent-rose-500 w-24" onchange="updateIntensidad(this)">
+            <span class="emoji-val text-base"></span>
+          `;
+          card.appendChild(ctrl);
+        } else {
+          // Si por alguna razón ya lo tenía, solo actualizamos el valor
+          card.querySelector("input[type='range']").value = info.intensidad;
+        }
+        // Actualizamos el emoji
+        updateIntensidad(card.querySelector("input[type='range']"));
+      }
+    }
+  }
+}
+
+// Ejecutar la carga automáticamente al abrir la página
+window.addEventListener('DOMContentLoaded', cargarTablero);
+
+// --- LÓGICA CRUD (Crear y Borrar) ---
+
+function agregarTarjeta() {
+  const usuarioInput = document.getElementById('nuevo-usuario');
+  const fraseInput = document.getElementById('nueva-frase');
+
+  // Validación básica
+  if (!usuarioInput.value.trim() || !fraseInput.value.trim()) {
+    alert("¡Ey! Llena tanto el usuario como la frase antes de agregar.");
+    return;
+  }
+
+  // Crear ID único basado en el timestamp
+  const nuevoId = 'card-' + Date.now();
+  
+  // Crear el elemento de la tarjeta
+  const nuevaTarjeta = document.createElement('div');
+  nuevaTarjeta.id = nuevoId;
+  nuevaTarjeta.draggable = true;
+  nuevaTarjeta.setAttribute('data-usuario', usuarioInput.value);
+  nuevaTarjeta.ondragstart = drag;
+  
+  // Clases CSS (incluye 'relative' y 'group' para el botón de borrar)
+  nuevaTarjeta.className = "p-3 bg-white border border-slate-200 rounded-lg shadow-sm cursor-grab active:cursor-grabbing hover:border-indigo-400 transition relative group";
+  
+  // Estructura interna de la tarjeta
+  nuevaTarjeta.innerHTML = `
+    <button onclick="borrarTarjeta('${nuevoId}')" class="absolute top-2 right-2 text-slate-300 hover:text-red-500 hidden group-hover:block transition text-xs" title="Borrar">❌</button>
+    <span class="text-xs font-semibold text-indigo-600 block mb-1">${usuarioInput.value}</span>
+    <p class="text-sm text-slate-700">"${fraseInput.value}"</p>
+  `;
+
+  // Inyectar en la bandeja de entrada
+  document.getElementById('inbox').appendChild(nuevaTarjeta);
+  
+  // Limpiar formulario y guardar estado en localStorage
+  usuarioInput.value = '';
+  fraseInput.value = '';
+  guardarTablero();
+}
+
+function borrarTarjeta(id) {
+  const tarjeta = document.getElementById(id);
+  if (tarjeta) {
+    tarjeta.remove();
+    guardarTablero(); // Actualizamos la memoria tras borrar
+  }
+}
+  </script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prototipo - Algoritmos de Atención</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Colores basados en tus wireframes */
+    .bg-uabc-green { background-color: #007A33; }
+    .bg-uabc-yellow { background-color: #F6EB61; }
+  </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+  <!-- Contenedor del Dispositivo Móvil -->
+  <div class="w-full max-w-sm bg-white h-[650px] shadow-2xl border-4 border-gray-800 rounded-3xl overflow-hidden flex flex-col relative">
+    
+    <!-- Área dinámica donde cambian las vistas -->
+    <div id="app-view" class="flex-1 overflow-y-auto bg-gray-300 flex flex-col"></div>
+
+    <!-- Navegación Fija (Rutas requeridas) -->
+    <nav class="bg-uabc-green text-white text-xs flex justify-around p-3 border-t border-green-800">
+      <a href="#/" class="hover:text-yellow-300 text-center flex flex-col items-center">🏠<br>Inicio</a>
+      <a href="#/buscar" class="hover:text-yellow-300 text-center flex flex-col items-center">🔍<br>Buscar</a>
+      <a href="#/sesiones" class="hover:text-yellow-300 text-center flex flex-col items-center">📚<br>Sesiones</a>
+    </nav>
+  </div>
+
+  <script>
+    // SISTEMA DE RUTAS (ROUTER)
+    function router() {
+      const path = window.location.hash.slice(1) || "/";
+      const view = document.getElementById("app-view");
+
+      // WF1: Ruta Raíz (Inicio)
+      if (path === "/") {
+        view.innerHTML = `
+          <div class="bg-uabc-green p-4 flex-1 flex flex-col">
+            <!-- Johnson Box -->
+            <div class="bg-uabc-yellow p-4 shadow-md text-center border-b-4 border-yellow-500 relative">
+              <h2 class="font-bold text-gray-900 text-lg">Tienes un trámite pendiente</h2>
+              <button class="text-xs bg-white text-gray-700 px-2 py-1 mt-2 border border-gray-300">Ir a recordatorios</button>
+            </div>
+            
+            <!-- Contenido Central -->
+            <div class="flex-1 bg-gray-300 mt-2 flex flex-col items-center justify-center">
+              <div class="text-6xl mb-4 text-green-700">🧑‍🏫</div>
+              <a href="#/sesion/123" class="text-lg font-bold text-gray-800 flex flex-col items-center hover:scale-105 transition">
+                Iniciar Traducción
+                <span class="text-3xl mt-2">👍</span>
+              </a>
+            </div>
+
+            <!-- Botones Inferiores -->
+            <div class="flex gap-2 mt-2">
+              <button class="flex-1 bg-gray-500 text-white text-xs py-3 font-bold">Configuración</button>
+              <button class="flex-1 bg-gray-500 text-white text-xs py-3 font-bold">Historial traducciones</button>
+              <button class="flex-1 bg-gray-500 text-white text-xs py-3 font-bold">Asistencia de uso</button>
+            </div>
+          </div>
+        `;
+      } 
+      // WF2: Ruta de Sesión (Task Flow principal)
+      else if (path.startsWith("/sesion/")) {
+        const id = path.split("/")[2]; // Captura el parámetro :id
+        view.innerHTML = `
+          <div class="bg-uabc-green p-4 flex-1 flex flex-col">
+            <!-- Johnson Box -->
+            <div class="bg-uabc-yellow p-4 shadow-md text-center border-b-4 border-yellow-500 relative">
+              <h2 class="font-bold text-gray-900 text-sm">Mañana hay que traer una constancia</h2>
+              <button class="text-[10px] bg-white text-gray-700 px-2 py-1 mt-2 border border-gray-300 absolute bottom-2 right-2">Ir a recordatorios</button>
+            </div>
+            
+            <!-- Contenido Central -->
+            <div class="flex-1 bg-gray-300 mt-2 relative p-2">
+              <p class="font-bold text-gray-700">Traducción en proceso...</p>
+              <div class="flex justify-center mt-8">
+                <div class="text-8xl text-green-700 animate-pulse">🧑‍🏫</div>
+              </div>
+              <div class="absolute bottom-2 left-2 right-2 flex justify-between text-xs font-bold text-gray-800">
+                <span>Confiabilidad: 96%</span>
+                <span>Velocidad: Perfecta</span>
+              </div>
+            </div>
+
+            <!-- Botones Inferiores -->
+            <div class="flex gap-2 mt-2">
+              <button onclick="window.location.hash='#/'" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white text-xs py-3 font-bold">Guardar en historial</button>
+              <button class="flex-1 bg-gray-500 hover:bg-gray-600 text-white text-xs py-3 font-bold">Verificar traducción</button>
+              <button class="flex-1 bg-gray-500 hover:bg-gray-600 text-white text-xs py-3 font-bold">Repetir traducción</button>
+            </div>
+          </div>
+        `;
+      }
+      // Placeholder para Ruta /buscar
+      else if (path === "/buscar") {
+        view.innerHTML = `
+          <div class="p-6 flex-1 bg-white">
+            <h2 class="text-xl font-bold text-green-700 mb-4">Buscador</h2>
+            <input type="text" placeholder="Buscar traducciones o tutores..." class="w-full p-2 border-2 border-gray-300 rounded">
+            <p class="text-sm text-gray-500 mt-4">Enlaza hacia <a href="#/tutor/1" class="text-blue-500 underline">/tutor/:id</a></p>
+          </div>
+        `;
+      }
+      // Placeholder para Ruta /tutor/:id y /agendar/:tutorId
+      else if (path.startsWith("/tutor/")) {
+        const id = path.split("/")[2];
+        view.innerHTML = `
+          <div class="p-6 flex-1 bg-white">
+            <h2 class="text-xl font-bold text-green-700">Perfil del Tutor #${id}</h2>
+            <p class="mt-4">Información del maestro/tutor.</p>
+            <a href="#/agendar/${id}" class="mt-4 block bg-yellow-400 text-center p-3 font-bold text-gray-800">Agendar Sesión</a>
+          </div>
+        `;
+      }
+      else if (path.startsWith("/agendar/")) {
+        view.innerHTML = `<div class="p-6 flex-1 bg-white"><h2 class="text-xl font-bold text-green-700">Calendario</h2><p>Agendando cita...</p></div>`;
+      }
+      else if (path === "/sesiones") {
+        view.innerHTML = `<div class="p-6 flex-1 bg-white"><h2 class="text-xl font-bold text-green-700">Historial de Sesiones</h2><p>Lista de tareas.</p></div>`;
+      }
+    }
+
+    // Escuchar los cambios en la URL (hash) y cargar al inicio
+    window.addEventListener("hashchange", router);
+    window.addEventListener("load", router);
+  </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f9; }
+form { display: flex; flex-direction: column; gap: 10px; max-width: 600px; margin-bottom: 20px; }
+input, select, button { padding: 10px; font-size: 14px; }
+button { background: #007bff; color: white; border: none; cursor: pointer; }
+button:hover { background: #0056b3; }
+.export-buttons { margin-bottom: 20px; }
+.node-insight { background: #fff; border-left: 5px solid #007bff; padding: 10px; margin-bottom: 10px; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.node-req { margin-left: 20px; color: #333; font-size: 0.95em; }
+.node-arq { margin-left: 40px; color: #555; font-size: 0.9em; font-style: italic; }
+.badge { font-weight: bold; padding: 2px 6px; border-radius: 3px; color: white; }
+.prio-1 { background: #d9534f; } /* Alta */
+.prio-2 { background: #f0ad4e; } /* Media */
+.prio-3 { background: #5bc0de; } /* Baja */

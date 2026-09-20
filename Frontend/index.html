@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mapeo de Requerimientos - P1</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Mapeo de Requerimientos y Decisiones de Arquitectura</h1>
+
+  <!-- Formulario -->
+  <form id="insightForm">
+    <input type="text" id="insight" placeholder="Insight (ej: Usuarios sordos no confían en traducciones sin revisión)" required>
+    <input type="text" id="reqFunc" placeholder="Requisito Funcional (ej: Modo de revisión manual)" required>
+    <input type="text" id="reqUX" placeholder="Requisito UX (ej: Indicador de estado)" required>
+    <input type="text" id="decisionArq" placeholder="Decisión de Arquitectura (ej: Cola de mensajes)" required>
+    
+    <select id="prioridad">
+      <option value="1">Alta</option>
+      <option value="2">Media</option>
+      <option value="3">Baja</option>
+    </select>
+
+    <select id="estado">
+      <option value="Pendiente">Pendiente</option>
+      <option value="Validado">Validado con usuario</option>
+    </select>
+
+    <button type="submit">Agregar Insight</button>
+  </form>
+
+  <!-- Botones Exportar -->
+  <div class="export-buttons">
+    <button onclick="exportarJSON()">Exportar a JSON</button>
+    <button onclick="exportarCSV()">Exportar a CSV</button>
+  </div>
+
+  <!-- Vista Arbol / Lista -->
+  <h2>Árbol de Trazabilidad</h2>
+  <div id="treeView"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

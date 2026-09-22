@@ -2,42 +2,82 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Mapeo de Requerimientos - P1</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mapeo de Requerimientos y Trazabilidad - P1</title>
   <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <h1>Mapeo de Requerimientos y Decisiones de Arquitectura</h1>
+  <div class="app-container">
+    <header class="header">
+      <h1>Mapeo de Requerimientos y Arquitectura</h1>
+      <p class="subtitle">Matriz de trazabilidad: Insight → Requisitos → Decisión de Arquitectura</p>
+    </header>
 
-  <!-- Formulario -->
-  <form id="insightForm">
-    <input type="text" id="insight" placeholder="Insight (ej: Usuarios sordos no confían en traducciones sin revisión)" required>
-    <input type="text" id="reqFunc" placeholder="Requisito Funcional (ej: Modo de revisión manual)" required>
-    <input type="text" id="reqUX" placeholder="Requisito UX (ej: Indicador de estado)" required>
-    <input type="text" id="decisionArq" placeholder="Decisión de Arquitectura (ej: Cola de mensajes)" required>
-    
-    <select id="prioridad">
-      <option value="1">Alta</option>
-      <option value="2">Media</option>
-      <option value="3">Baja</option>
-    </select>
+    <!-- Formulario tipo Card -->
+    <section class="card form-card">
+      <h2>Registrar Nuevo Insight</h2>
+      <form id="insightForm" class="grid-form">
+        <div class="form-group full-width">
+          <label for="insight">Insight de Investigación</label>
 
-    <select id="estado">
-      <option value="Pendiente">Pendiente</option>
-      <option value="Validado">Validado con usuario</option>
-    </select>
+          <input type="text" id="insight" placeholder="Ej: Usuarios sordos no confían en traducciones sin revisión humana" required>
+        </div>
 
-    <button type="submit">Agregar Insight</button>
-  </form>
+        <div class="form-group">
+          <label for="reqFunc">Requisito Funcional</label>
+          <input type="text" id="reqFunc" placeholder="Ej: Módulo de revisión y feedback manual" required>
+        </div>
 
-  <!-- Botones Exportar -->
-  <div class="export-buttons">
-    <button onclick="exportarJSON()">Exportar a JSON</button>
-    <button onclick="exportarCSV()">Exportar a CSV</button>
+        <div class="form-group">
+          <label for="reqUX">Requisito UX</label>
+          <input type="text" id="reqUX" placeholder="Ej: Indicador visual de nivel de certeza" required>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="decisionArq">Decisión de Arquitectura</label>
+          <input type="text" id="decisionArq" placeholder="Ej: Servicio de mensajería asíncrona para moderación" required>
+        </div>
+
+        <div class="form-group">
+          <label for="prioridad">Prioridad</label>
+          <select id="prioridad">
+            <option value="1">🔴 Alta (1)</option>
+            <option value="2">🟡 Media (2)</option>
+            <option value="3">🟢 Baja (3)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="estado">Estado</label>
+          <select id="estado">
+            <option value="Pendiente">⏳ Pendiente</option>
+            <option value="Validado">✅ Validado con usuario</option>
+          </select>
+        </div>
+
+        <div class="form-actions full-width">
+          <button type="submit" class="btn btn-primary">+ Agregar a la Matriz</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Sección de Lista / Árbol -->
+    <section class="card tree-card">
+      <div class="tree-header">
+        <div>
+          <h2>Árbol de Trazabilidad</h2>
+          <span class="badge-counter" id="totalCounter">0 Registro(s)</span>
+        </div>
+        <div class="export-buttons">
+          <button onclick="exportarJSON()" class="btn btn-secondary">📦 Exportar JSON</button>
+          <button onclick="exportarCSV()" class="btn btn-secondary">📊 Exportar CSV</button>
+        </div>
+      </div>
+
+      <div id="treeView" class="tree-container"></div>
+    </section>
   </div>
-
-  <!-- Vista Arbol / Lista -->
-  <h2>Árbol de Trazabilidad</h2>
-  <div id="treeView"></div>
 
   <script src="app.js"></script>
 </body>

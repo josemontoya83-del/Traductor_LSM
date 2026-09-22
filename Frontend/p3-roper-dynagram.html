@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P3 — Roper Dynagram + Experience Stack (LSM-Connect)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen p-6">
+
+<header class="max-w-6xl mx-auto mb-6 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+  <div class="flex flex-wrap justify-between items-center gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-indigo-900">P3: Roper Dynagram + Experience Stack</h1>
+      <p class="text-slate-500 text-sm">Proyecto: LSM-Connect — Segmentación por valores y síntesis del proyecto</p>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="exportarJSON()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium shadow transition text-sm">📥 Exportar JSON</button>
+      <button onclick="exportarCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium shadow transition text-sm">📊 Exportar CSV</button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+  <!-- ================= COLUMNA IZQUIERDA: RUEDA + PANEL ================= -->
+  <div class="space-y-6">
+
+    <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+      <h2 class="text-lg font-bold text-slate-700 mb-3">🎡 Rueda de segmentos (recalculada automáticamente)</h2>
+      <div class="flex flex-col items-center">
+        <div id="wheel" class="w-56 h-56 rounded-full border-4 border-white shadow-inner" style="background:conic-gradient(#e2e8f0 0deg 360deg)"></div>
+        <p class="text-xs text-slate-400 mt-2" id="wheel-total">0 usuarios asignados</p>
+      </div>
+      <div id="legend" class="mt-4 space-y-2"></div>
+    </section>
+
+    <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+      <h2 class="text-lg font-bold text-slate-700 mb-3">📋 Panel dinámico de salida</h2>
+      <div id="panel-vacio" class="text-slate-400 italic text-center py-6 border border-dashed border-slate-200 rounded-lg">
+        Selecciona un segmento de la rueda para ver su requisito UX, funcionalidad clave y tono.
+      </div>
+      <div id="panel-contenido" class="hidden space-y-3"></div>
+    </section>
+
+  </div>
+
+  <!-- ================= COLUMNA DERECHA: FORMULARIOS ================= -->
+  <div class="space-y-6">
+
+    <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+      <h2 class="text-lg font-bold text-slate-700 mb-3">➕ Definir segmento</h2>
+      <div class="grid grid-cols-1 gap-3">
+        <input type="text" id="s-nombre" placeholder="Nombre del segmento" class="text-sm p-2 border border-slate-300 rounded focus:outline-none focus:border-indigo-500">
+        <input type="text" id="s-valores" placeholder="Valores asociados (separa con coma)" class="text-sm p-2 border border-slate-300 rounded focus:outline-none focus:border-indigo-500">
+        <input type="text" id="s-reqUX" placeholder="Requisito UX derivado" class="text-sm p-2 border border-slate-300 rounded focus:outline-none focus:border-indigo-500">
+        <input type="text" id="s-funcionalidad" placeholder="Funcionalidad clave" class="text-sm p-2 border border-slate-300 rounded focus:outline-none focus:border-indigo-500">
+        <input type="text" id="s-tono" placeholder="Tono del sistema" class="text-sm p-2 border border-slate-300 rounded focus:outline-none focus:border-indigo-500">
+      </div>
+      <button type="button" onclick="agregarSegmento()" class="mt-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-4 py-2 rounded transition shadow-sm">Guardar segmento</button>
+      <div class="err text-red-500 text-xs mt-2 hidden" id="err-segmento">El nombre del segmento es obligatorio.</div>
+
+      <div id="lista-segmentos" class="mt-4 space-y-2"></div>
+    </section>
+
+    <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+      <h2 class="text-lg font-bold text-slate-700 mb-3">👤 Asignar usuario a un segmento</h2>
+      <div class="grid grid-cols-1 gap-3">
+        <input type="text" id="u-alias" placeholder="Alias del usuario (ej. Alex)" class="text-sm p-2 border border-slate-300 rounded focus:outline-none focus:border-indigo-500">
+        <select id="u-segmento" class="text-sm p-2 border border-slate-300 rounded focus:outline-none focus:border-indigo-500"></select>
+        <input type="text" id="u-evidencia" placeholder="Evidencia (link, fuente, referencia a P4/P5/P6)" class="text-sm p-2 border border-slate-300 rounded focus:outline-none focus:border-indigo-500">
+      </div>
+      <button type="button" onclick="agregarUsuario()" class="mt-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-4 py-2 rounded transition shadow-sm">Asignar usuario</button>
+      <div class="err text-red-500 text-xs mt-2 hidden" id="err-usuario">Alias y segmento son obligatorios.</div>
+
+      <div id="lista-usuarios" class="mt-4 space-y-2"></div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ================= EXPERIENCE STACK ================= -->
+<section class="max-w-6xl mx-auto mt-6 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+  <h2 class="text-lg font-bold text-slate-700 mb-1">🏗️ Experience Stack — Síntesis del proyecto (Fase 5)</h2>
+  <p class="text-slate-500 text-sm mb-4">Una sola lámina que integra el trabajo de todo el equipo, en 3 capas.</p>
+
+  <div class="space-y-3">
+    <div class="rounded-xl border-2 border-indigo-300 bg-indigo-50 p-4">
+      <div class="text-xs font-bold text-indigo-700 uppercase tracking-wide mb-1">Entrega — Frontend de la atención (P2)</div>
+      <p class="text-sm text-slate-700">Johnson Box en pantalla de entrada ("Tienes un trámite pendiente") + Pirámide Invertida en 3 niveles (traducción destacada → confiabilidad/velocidad → historial). Empathy Map con cuadrícula 2×2 traduce el sentir del usuario en insights priorizados.</p>
+    </div>
+    <div class="flex justify-center"><span class="text-slate-300 text-xl">▼</span></div>
+    <div class="rounded-xl border-2 border-emerald-300 bg-emerald-50 p-4">
+      <div class="text-xs font-bold text-emerald-700 uppercase tracking-wide mb-1">Estructura — Middleware del movimiento (P1 + P5)</div>
+      <p class="text-sm text-slate-700">Base de datos real (usuario, sesion_traduccion, sena, video_clip, diccionario) con rutas y queries de P1, más los 3 task flows de P5 (traducir seña, seleccionar trámite, pedir ayuda) que definen cómo se mueve la información y cómo el sistema absorbe los errores del usuario.</p>
+    </div>
+    <div class="flex justify-center"><span class="text-slate-300 text-xl">▼</span></div>
+    <div class="rounded-xl border-2 border-amber-300 bg-amber-50 p-4">
+      <div class="text-xs font-bold text-amber-700 uppercase tracking-wide mb-1">Cimientos — Backend del problema (P4)</div>
+      <p class="text-sm text-slate-700">Design Space Exploration: 5 necesidades obvias + 3 ocultas detectadas en campo, 3 patrones de cross-pollination (apps de traducción, telemedicina, cabinas de aviación), y la convergencia que delimita el alcance: traducción bidireccional de 25-30 señas institucionales, sin almacenamiento de video en disco.</p>
+    </div>
+  </div>
+</section>
+
+<script>
+const SEG_COLORS = ['#6366f1','#10b981','#f59e0b','#ef4444','#0ea5e9','#a855f7','#ec4899','#84cc16'];
+
+let segmentos = JSON.parse(localStorage.getItem('p3_segmentos') || 'null');
+let usuarios = JSON.parse(localStorage.getItem('p3_usuarios') || 'null');
+let segmentoSeleccionado = null;
+
+if (!segmentos) {
+  segmentos = [
+    { id: 1, nombre: "Alumnos con dominio de LSM", valores: ["Autonomía","Dignidad","Rapidez"], reqUX: "Confirmación clara e inmediata de que el trámite quedó completo antes de salir de la ventanilla.", funcionalidad: "Modo de preguntas de seguimiento en tiempo real (ej. ¿de qué semestre?) sin quedarse atorado.", tono: "Directo y eficiente, sin intermediarios ni dependencia de terceros." },
+    { id: 2, nombre: "Personal administrativo sin experiencia en LSM", valores: ["Simplicidad","Confianza","Feedback claro"], reqUX: "Interfaz simple con retroalimentación visual constante sobre el estado de la traducción.", funcionalidad: "Indicador de confiabilidad de la traducción + opción de escritura manual como respaldo.", tono: "Amable, sin tecnicismos, tranquilizador ante errores." },
+    { id: 3, nombre: "Usuarios intermedios / aprendices de LSM", valores: ["Práctica","Paciencia del sistema"], reqUX: "", funcionalidad: "", tono: "" }
+  ];
+  guardarSegmentos();
+}
+if (!usuarios) {
+  usuarios = [
+    { id: 1, alias: "Alex", segmentoId: 1, evidencia: "Entrevista P5 — Usuario súper-experto, estudiante de licenciatura 100% fluido en LSM" },
+    { id: 2, alias: "Empleado A", segmentoId: 2, evidencia: "Entrevista P5 — Usuario inexperto, empleado de ventanilla UABC" }
+  ];
+  guardarUsuarios();
+}
+
+function guardarSegmentos(){ localStorage.setItem('p3_segmentos', JSON.stringify(segmentos)); }
+function guardarUsuarios(){ localStorage.setItem('p3_usuarios', JSON.stringify(usuarios)); }
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function agregarSegmento(){
+  const nombre = document.getElementById('s-nombre').value.trim();
+  if(!nombre){ document.getElementById('err-segmento').classList.remove('hidden'); return; }
+  document.getElementById('err-segmento').classList.add('hidden');
+  const valores = document.getElementById('s-valores').value.split(',').map(v=>v.trim()).filter(Boolean);
+  segmentos.push({
+    id: Date.now(),
+    nombre,
+    valores,
+    reqUX: document.getElementById('s-reqUX').value.trim(),
+    funcionalidad: document.getElementById('s-funcionalidad').value.trim(),
+    tono: document.getElementById('s-tono').value.trim()
+  });
+  guardarSegmentos();
+  ['s-nombre','s-valores','s-reqUX','s-funcionalidad','s-tono'].forEach(id => document.getElementById(id).value = '');
+  renderTodo();
+}
+function borrarSegmento(id){
+  if(!confirm('¿Borrar este segmento? También se quitará de los usuarios asignados a él.')) return;
+  segmentos = segmentos.filter(s => s.id !== id);
+  usuarios.forEach(u => { if(u.segmentoId === id) u.segmentoId = null; });
+  guardarSegmentos(); guardarUsuarios();
+  if(segmentoSeleccionado === id) segmentoSeleccionado = null;
+  renderTodo();
+}
+
+function agregarUsuario(){
+  const alias = document.getElementById('u-alias').value.trim();
+  const segmentoId = parseInt(document.getElementById('u-segmento').value);
+  if(!alias || !segmentoId){ document.getElementById('err-usuario').classList.remove('hidden'); return; }
+  document.getElementById('err-usuario').classList.add('hidden');
+  usuarios.push({
+    id: Date.now(),
+    alias,
+    segmentoId,
+    evidencia: document.getElementById('u-evidencia').value.trim()
+  });
+  guardarUsuarios();
+  ['u-alias','u-evidencia'].forEach(id => document.getElementById(id).value = '');
+  renderTodo();
+}
+function borrarUsuario(id){
+  if(!confirm('¿Quitar este usuario?')) return;
+  usuarios = usuarios.filter(u => u.id !== id);
+  guardarUsuarios();
+  renderTodo();
+}
+
+function seleccionarSegmento(id){
+  segmentoSeleccionado = id;
+  renderPanel();
+  renderLegend();
+}
+
+function renderSelectSegmentos(){
+  const sel = document.getElementById('u-segmento');
+  sel.innerHTML = '<option value="">Selecciona un segmento</option>' +
+    segmentos.map(s => `<option value="${s.id}">${escapeHtml(s.nombre)}</option>`).join('');
+}
+
+function renderListaSegmentos(){
+  const cont = document.getElementById('lista-segmentos');
+  if(segmentos.length === 0){ cont.innerHTML = '<p class="text-slate-400 text-xs italic">Sin segmentos aún.</p>'; return; }
+  cont.innerHTML = segmentos.map(s => `
+    <div class="border border-slate-200 rounded-lg p-3 text-sm flex justify-between items-start gap-2">
+      <div>
+        <b>${escapeHtml(s.nombre)}</b>
+        <div class="text-xs text-slate-400">${s.valores.map(escapeHtml).join(', ')}</div>
+      </div>
+      <button type="button" onclick="borrarSegmento(${s.id})" class="text-red-500 hover:text-red-700 text-xs font-bold shrink-0">Borrar</button>
+    </div>
+  `).join('');
+}
+
+function renderListaUsuarios(){
+  const cont = document.getElementById('lista-usuarios');
+  if(usuarios.length === 0){ cont.innerHTML = '<p class="text-slate-400 text-xs italic">Sin usuarios asignados aún.</p>'; return; }
+  cont.innerHTML = usuarios.map(u => {
+    const seg = segmentos.find(s => s.id === u.segmentoId);
+    return `
+    <div class="border border-slate-200 rounded-lg p-3 text-sm flex justify-between items-start gap-2">
+      <div>
+        <b>${escapeHtml(u.alias)}</b> → <span class="text-indigo-600">${seg ? escapeHtml(seg.nombre) : '(sin segmento)'}</span>
+        <div class="text-xs text-slate-400">${escapeHtml(u.evidencia || 'Sin evidencia registrada')}</div>
+      </div>
+      <button type="button" onclick="borrarUsuario(${u.id})" class="text-red-500 hover:text-red-700 text-xs font-bold shrink-0">Quitar</button>
+    </div>`;
+  }).join('');
+}
+
+function calcularCuotas(){
+  const total = usuarios.filter(u => u.segmentoId).length;
+  return segmentos.map((s, i) => {
+    const count = usuarios.filter(u => u.segmentoId === s.id).length;
+    const pct = total > 0 ? (count / total) * 100 : 0;
+    return { ...s, count, pct, color: SEG_COLORS[i % SEG_COLORS.length] };
+  });
+}
+
+function renderRueda(){
+  const datos = calcularCuotas();
+  const total = usuarios.filter(u => u.segmentoId).length;
+  document.getElementById('wheel-total').textContent = total + (total === 1 ? ' usuario asignado' : ' usuarios asignados');
+
+  const wheel = document.getElementById('wheel');
+  if(total === 0){
+    wheel.style.background = 'conic-gradient(#e2e8f0 0deg 360deg)';
+    return datos;
+  }
+  let acc = 0;
+  const stops = [];
+  datos.forEach(s => {
+    if(s.pct <= 0) return;
+    const start = acc * 3.6;
+    acc += s.pct;
+    const end = acc * 3.6;
+    stops.push(`${s.color} ${start}deg ${end}deg`);
+  });
+  wheel.style.background = `conic-gradient(${stops.join(', ')})`;
+  return datos;
+}
+
+function renderLegend(){
+  const datos = calcularCuotas();
+  const cont = document.getElementById('legend');
+  cont.innerHTML = datos.map(s => `
+    <button type="button" onclick="seleccionarSegmento(${s.id})"
+      class="w-full flex items-center justify-between text-left text-sm p-2 rounded-lg border transition ${segmentoSeleccionado === s.id ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 hover:bg-slate-50'}">
+      <span class="flex items-center gap-2">
+        <span class="w-3 h-3 rounded-full inline-block" style="background:${s.color}"></span>
+        ${escapeHtml(s.nombre)}
+      </span>
+      <span class="text-xs text-slate-500">${s.count} · ${s.pct.toFixed(0)}%</span>
+    </button>
+  `).join('');
+}
+
+function renderPanel(){
+  const vacio = document.getElementById('panel-vacio');
+  const cont = document.getElementById('panel-contenido');
+  const s = segmentos.find(x => x.id === segmentoSeleccionado);
+  if(!s){ vacio.classList.remove('hidden'); cont.classList.add('hidden'); return; }
+  vacio.classList.add('hidden'); cont.classList.remove('hidden');
+  cont.innerHTML = `
+    <div>
+      <div class="text-xs font-bold text-indigo-600 uppercase tracking-wide">Segmento</div>
+      <div class="text-lg font-bold text-slate-800">${escapeHtml(s.nombre)}</div>
+      <div class="text-xs text-slate-400">${s.valores.map(escapeHtml).join(' · ') || 'Sin valores definidos'}</div>
+    </div>
+    <div><div class="text-xs font-bold text-slate-500 uppercase">Requisito UX derivado</div><p class="text-sm">${escapeHtml(s.reqUX) || '<span class="text-slate-400 italic">Sin definir</span>'}</p></div>
+    <div><div class="text-xs font-bold text-slate-500 uppercase">Funcionalidad clave</div><p class="text-sm">${escapeHtml(s.funcionalidad) || '<span class="text-slate-400 italic">Sin definir</span>'}</p></div>
+    <div><div class="text-xs font-bold text-slate-500 uppercase">Tono del sistema</div><p class="text-sm">${escapeHtml(s.tono) || '<span class="text-slate-400 italic">Sin definir</span>'}</p></div>
+  `;
+}
+
+function renderTodo(){
+  renderSelectSegmentos();
+  renderListaSegmentos();
+  renderListaUsuarios();
+  renderRueda();
+  renderLegend();
+  renderPanel();
+}
+
+function exportarJSON(){
+  const data = { segmentos, usuarios };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'roper_dynagram.json'; a.click();
+}
+function exportarCSV(){
+  let csv = 'Segmento,Valores,ReqUX,Funcionalidad,Tono,UsuarioAlias,UsuarioEvidencia\n';
+  const cell = s => `"${String(s).replace(/"/g,'""')}"`;
+  segmentos.forEach(s => {
+    const asignados = usuarios.filter(u => u.segmentoId === s.id);
+    if(asignados.length === 0){
+      csv += [cell(s.nombre), cell(s.valores.join(' | ')), cell(s.reqUX), cell(s.funcionalidad), cell(s.tono), '', ''].join(',') + '\n';
+    } else {
+      asignados.forEach(u => {
+        csv += [cell(s.nombre), cell(s.valores.join(' | ')), cell(s.reqUX), cell(s.funcionalidad), cell(s.tono), cell(u.alias), cell(u.evidencia)].join(',') + '\n';
+      });
+    }
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'roper_dynagram.csv'; a.click();
+}
+
+renderTodo();
+</script>
+</body>
+</html>

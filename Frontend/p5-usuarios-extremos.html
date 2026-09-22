@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P5 — Usuarios Extremos (LSM-Connect)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen p-6">
+
+<header class="max-w-5xl mx-auto mb-6 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+  <div class="flex flex-wrap justify-between items-center gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-indigo-900">P5: Observación de Usuarios Extremos</h1>
+      <p class="text-slate-500 text-sm">Proyecto: LSM-Connect — Traductor de LSM para trámites UABC</p>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="exportarJSON()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium shadow transition text-sm">📥 Exportar JSON</button>
+      <button onclick="exportarCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg font-medium shadow transition text-sm">📊 Exportar CSV</button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-5xl mx-auto space-y-6">
+
+  <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+    <h2 id="form-title" class="text-lg font-bold text-slate-700 mb-4">➕ Agregar observación</h2>
+
+    <div class="mb-4">
+      <h3 class="text-sm font-bold text-indigo-700 mb-2 uppercase tracking-wide">1 · Clasificación del usuario</h3>
+      <select id="f-clasificacion" class="text-sm p-2 border border-slate-300 rounded focus:outline-none focus:border-indigo-500">
+        <option value="Super-experto">Súper-experto</option>
+        <option value="Mainstream">Mainstream</option>
+        <option value="Inexperto">Inexperto</option>
+      </select>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-sm font-bold text-indigo-700 mb-2 uppercase tracking-wide">2 · Perfil</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <input type="text" id="f-alias" placeholder="Alias" class="text-sm p-2 border border-slate-300 rounded focus:outline-none focus:border-indigo-500">
+        <input type="text" id="f-contexto" placeholder="Contexto de uso" class="text-sm p-2 border border-slate-300 rounded focus:outline-none focus:border-indigo-500">
+        <input type="text" id="f-frecuencia" placeholder="Frecuencia de uso" class="text-sm p-2 border border-slate-300 rounded focus:outline-none focus:border-indigo-500">
+        <div class="flex items-center gap-3">
+          <label class="text-xs text-slate-500 whitespace-nowrap">Nivel de habilidad (1-10)</label>
+          <input type="number" id="f-nivel" min="1" max="10" value="5" class="text-sm p-2 border border-slate-300 rounded w-20 focus:outline-none focus:border-indigo-500">
+        </div>
+      </div>
+      <div class="err text-red-500 text-xs mt-2 hidden" id="err-perfil">Alias es obligatorio.</div>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-sm font-bold text-indigo-700 mb-2 uppercase tracking-wide">3 · Tareas observadas</h3>
+      <textarea id="f-tareas" placeholder="¿Qué hizo o dijo el usuario al usar/describir la herramienta?" class="w-full text-sm p-2 border border-slate-300 rounded h-16 focus:outline-none focus:border-indigo-500"></textarea>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-sm font-bold text-indigo-700 mb-2 uppercase tracking-wide">4 · Workarounds actuales</h3>
+      <textarea id="f-workarounds" placeholder="Trucos o adaptaciones manuales que ya usa sin la app" class="w-full text-sm p-2 border border-slate-300 rounded h-16 focus:outline-none focus:border-indigo-500"></textarea>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-sm font-bold text-indigo-700 mb-2 uppercase tracking-wide">5 · Errores / fricciones amplificadas</h3>
+      <textarea id="f-friccion" placeholder="Fricciones que este usuario hace más visibles que uno normal" class="w-full text-sm p-2 border border-slate-300 rounded h-16 focus:outline-none focus:border-indigo-500"></textarea>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-sm font-bold text-indigo-700 mb-2 uppercase tracking-wide">6 · Necesidad extrema + hipótesis de generalización</h3>
+      <textarea id="f-necesidad" placeholder="Necesidad extrema detectada" class="w-full text-sm p-2 border border-slate-300 rounded h-16 mb-2 focus:outline-none focus:border-indigo-500"></textarea>
+      <textarea id="f-hipotesis" placeholder="Hipótesis de cómo se generaliza al usuario promedio" class="w-full text-sm p-2 border border-slate-300 rounded h-16 focus:outline-none focus:border-indigo-500"></textarea>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-sm font-bold text-indigo-700 mb-2 uppercase tracking-wide">7 · Evidencia</h3>
+      <input type="text" id="f-evidencia" placeholder="Links, fotos, marcas de tiempo de audio" class="w-full text-sm p-2 border border-slate-300 rounded focus:outline-none focus:border-indigo-500">
+    </div>
+
+    <div class="flex gap-3">
+      <button type="button" onclick="guardarObservacion()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-4 py-2 rounded transition shadow-sm">Guardar observación</button>
+      <button type="button" onclick="limpiarFormulario()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm font-bold px-4 py-2 rounded transition">Limpiar formulario</button>
+    </div>
+  </section>
+
+  <section class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+    <h2 class="text-lg font-bold text-slate-700 mb-4">🗂️ Observaciones capturadas (<span id="contador">0</span>)</h2>
+    <div id="lista-observaciones" class="space-y-4"></div>
+  </section>
+
+</main>
+
+<script>
+let observaciones = JSON.parse(localStorage.getItem('p5_observaciones') || 'null');
+let editandoId = null;
+
+const CLASIF_COLOR = {
+  'Super-experto': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  'Mainstream': 'bg-amber-50 text-amber-700 border-amber-200',
+  'Inexperto': 'bg-rose-50 text-rose-700 border-rose-200'
+};
+
+if (!observaciones) {
+  observaciones = [
+    {
+      id: 1,
+      clasificacion: "Super-experto",
+      alias: "Alex",
+      contexto: "Estudiante de licenciatura, 100% fluido en LSM, realiza trámites de kardex y becas en UABC.",
+      frecuencia: "2 a 4 veces por semestre (entrega y seguimiento de beca, kardex)",
+      nivel: 10,
+      tareas: "Al describir cómo sería usar la herramienta, se detuvo específicamente en la idea de poder hacer preguntas de seguimiento (¿de qué semestre?) sin quedarse atorado.",
+      workarounds: "Lleva a un compañero de carrera que aprendió señas con él, y cuando no hay nadie disponible, usa notas predefinidas guardadas en el celular sobre lo que quiere hacer en el trámite.",
+      friccion: "No sabe si un malentendido fue error suyo o del empleado, porque no hay forma de aclarar rápido. No le agrada sentirse dependiente de un compañero que lo ayude para los trámites.",
+      necesidad: "Necesita poder resolver preguntas de seguimiento en tiempo real (¿qué semestre?) sin quedarse atorado, y necesita una confirmación real y clara de que su trámite quedó completo antes de irse de la ventanilla.",
+      hipotesis: "Si incluso un usuario experto en LSM valora mucho tener una confirmación clara del trámite, una confirmación real y clara beneficiaría tanto a alguien experto en LSM como a alguien que no lo es.",
+      evidencia: "Entrevista de campo — Parte 5, registrada en Docs/Parte_5.md"
+    },
+    {
+      id: 2,
+      clasificacion: "Inexperto",
+      alias: "Empleado A",
+      contexto: "Empleado de ventanilla en UABC; muy rara vez ha atendido a un alumno con discapacidad auditiva o del habla.",
+      frecuencia: "Rara vez atiende alumnos de LSM",
+      nivel: 1,
+      tareas: "Muestra preocupación específica sobre qué pasaría si una palabra no se traduce correctamente, pero no rechaza la idea una vez que entiende lo simple que sería.",
+      workarounds: "Pide al usuario que lo escriba en un bloc de notas y que se lo muestre.",
+      friccion: "El trámite tarda más porque el modelo de comunicación es escrito, que es mucho más lento que hablar directamente.",
+      necesidad: "Teme no saber usar la herramienta o no poder adaptarse a un nuevo modelo de trabajo; también le preocupa qué pasa si el sistema traduce mal una palabra y el error pasa desapercibido.",
+      hipotesis: "Si un empleado con cero experiencia en el ámbito de LSM logra sentirse a gusto con interfaz simple y el feedback claro ante errores de traducción de señas, el personal con un poco más de experiencia se adaptará a esa nueva forma de trabajo mucho más rápido.",
+      evidencia: "Entrevista de campo — Parte 5, registrada en Docs/Parte_5.md"
+    }
+  ];
+  guardarStorage();
+}
+
+function guardarStorage(){
+  localStorage.setItem('p5_observaciones', JSON.stringify(observaciones));
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function limpiarFormulario(){
+  editandoId = null;
+  document.getElementById('form-title').textContent = '➕ Agregar observación';
+  ['f-alias','f-contexto','f-frecuencia','f-tareas','f-workarounds','f-friccion','f-necesidad','f-hipotesis','f-evidencia'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-clasificacion').value = 'Super-experto';
+  document.getElementById('f-nivel').value = 5;
+  document.getElementById('err-perfil').classList.add('hidden');
+}
+
+function guardarObservacion(){
+  const alias = document.getElementById('f-alias').value.trim();
+  if(!alias){ document.getElementById('err-perfil').classList.remove('hidden'); return; }
+  document.getElementById('err-perfil').classList.add('hidden');
+
+  const data = {
+    id: editandoId || Date.now(),
+    clasificacion: document.getElementById('f-clasificacion').value,
+    alias,
+    contexto: document.getElementById('f-contexto').value.trim(),
+    frecuencia: document.getElementById('f-frecuencia').value.trim(),
+    nivel: parseInt(document.getElementById('f-nivel').value) || 1,
+    tareas: document.getElementById('f-tareas').value.trim(),
+    workarounds: document.getElementById('f-workarounds').value.trim(),
+    friccion: document.getElementById('f-friccion').value.trim(),
+    necesidad: document.getElementById('f-necesidad').value.trim(),
+    hipotesis: document.getElementById('f-hipotesis').value.trim(),
+    evidencia: document.getElementById('f-evidencia').value.trim()
+  };
+
+  if(editandoId){
+    const idx = observaciones.findIndex(o => o.id === editandoId);
+    observaciones[idx] = data;
+  } else {
+    observaciones.push(data);
+  }
+  guardarStorage();
+  limpiarFormulario();
+  renderLista();
+}
+
+function editarObservacion(id){
+  const o = observaciones.find(x => x.id === id);
+  if(!o) return;
+  editandoId = id;
+  document.getElementById('form-title').textContent = '✏️ Editando: ' + o.alias;
+  document.getElementById('f-clasificacion').value = o.clasificacion;
+  document.getElementById('f-alias').value = o.alias;
+  document.getElementById('f-contexto').value = o.contexto;
+  document.getElementById('f-frecuencia').value = o.frecuencia;
+  document.getElementById('f-nivel').value = o.nivel;
+  document.getElementById('f-tareas').value = o.tareas;
+  document.getElementById('f-workarounds').value = o.workarounds;
+  document.getElementById('f-friccion').value = o.friccion;
+  document.getElementById('f-necesidad').value = o.necesidad;
+  document.getElementById('f-hipotesis').value = o.hipotesis;
+  document.getElementById('f-evidencia').value = o.evidencia;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function borrarObservacion(id){
+  if(!confirm('¿Borrar esta observación?')) return;
+  observaciones = observaciones.filter(o => o.id !== id);
+  guardarStorage();
+  renderLista();
+}
+
+function renderLista(){
+  const cont = document.getElementById('lista-observaciones');
+  document.getElementById('contador').textContent = observaciones.length;
+  if(observaciones.length === 0){
+    cont.innerHTML = '<div class="text-slate-400 italic text-center py-6 border border-dashed border-slate-200 rounded-lg">Aún no hay observaciones capturadas.</div>';
+    return;
+  }
+  cont.innerHTML = '';
+  observaciones.forEach(o => {
+    const badge = CLASIF_COLOR[o.clasificacion] || 'bg-slate-50 text-slate-700 border-slate-200';
+    const div = document.createElement('div');
+    div.className = 'border border-slate-200 rounded-lg p-4';
+    div.innerHTML = `
+      <div class="flex items-center gap-2 mb-1">
+        <span class="text-xs font-bold px-2 py-0.5 rounded-full border ${badge}">${escapeHtml(o.clasificacion)}</span>
+        <span class="text-xs text-slate-400">Nivel de habilidad: ${o.nivel}/10</span>
+      </div>
+      <div class="text-lg font-bold text-slate-800">${escapeHtml(o.alias)}</div>
+      <div class="text-xs text-slate-400 mb-2">${escapeHtml(o.contexto)} ${o.frecuencia ? '· ' + escapeHtml(o.frecuencia) : ''}</div>
+      ${o.tareas ? `<p class="text-sm mt-2"><b>Tareas observadas:</b> ${escapeHtml(o.tareas)}</p>` : ''}
+      ${o.workarounds ? `<p class="text-sm mt-2"><b>Workarounds actuales:</b> ${escapeHtml(o.workarounds)}</p>` : ''}
+      ${o.friccion ? `<p class="text-sm mt-2"><b>Fricciones amplificadas:</b> ${escapeHtml(o.friccion)}</p>` : ''}
+      ${o.necesidad ? `<div class="bg-indigo-50 border-l-4 border-indigo-400 rounded p-2 text-sm mt-2"><b>Necesidad extrema:</b> ${escapeHtml(o.necesidad)}</div>` : ''}
+      ${o.hipotesis ? `<p class="text-sm mt-2 text-slate-500 italic"><b>Hipótesis de generalización:</b> ${escapeHtml(o.hipotesis)}</p>` : ''}
+      ${o.evidencia ? `<p class="text-xs mt-2 text-slate-400">📎 ${escapeHtml(o.evidencia)}</p>` : ''}
+      <div class="flex gap-2 mt-3">
+        <button type="button" onclick="editarObservacion(${o.id})" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold px-3 py-1 rounded transition">Editar</button>
+        <button type="button" onclick="borrarObservacion(${o.id})" class="border border-red-300 text-red-500 hover:bg-red-50 text-xs font-bold px-3 py-1 rounded transition">Borrar</button>
+      </div>
+    `;
+    cont.appendChild(div);
+  });
+}
+
+function exportarJSON(){
+  const blob = new Blob([JSON.stringify(observaciones, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'usuarios_extremos.json'; a.click();
+}
+function exportarCSV(){
+  let csv = 'Clasificacion,Alias,Contexto,Frecuencia,Nivel,Tareas,Workarounds,Friccion,Necesidad,Hipotesis,Evidencia\n';
+  observaciones.forEach(o => {
+    const cell = s => `"${String(s).replace(/"/g,'""')}"`;
+    csv += [
+      cell(o.clasificacion), cell(o.alias), cell(o.contexto), cell(o.frecuencia), o.nivel,
+      cell(o.tareas), cell(o.workarounds), cell(o.friccion), cell(o.necesidad), cell(o.hipotesis), cell(o.evidencia)
+    ].join(',') + '\n';
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'usuarios_extremos.csv'; a.click();
+}
+
+renderLista();
+</script>
+</body>
+</html>

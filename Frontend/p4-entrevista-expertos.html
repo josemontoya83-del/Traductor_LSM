@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LSM-Connect — Interfaz 1: Entrevista a Expertos</title>
+<style>
+:root{
+  --paper:#eef1ea; --paper-2:#e3e8dc; --ink:#1f2a24; --ink-soft:#384539; --muted:#5b6358;
+  --line:#cdd4c4; --field-bg:#24382a; --field-line:#a9c9a0; --field-text:#eef6ea;
+  --accent:#3c6e47; --accent-soft:#dfe9d9; --card-bg:#fbfbf7; --danger:#a13d2c;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#10140f; --paper-2:#161c13; --ink:#e6ece2; --ink-soft:#c4cdbe; --muted:#93a08a;
+    --line:#2b3527; --field-bg:#14261a; --field-line:#7fae74; --field-text:#dff3d9;
+    --accent:#6fae7c; --accent-soft:#1c2c1f; --card-bg:#131a10; --danger:#e08469;
+  }
+}
+*{box-sizing:border-box}
+body{background:var(--paper); color:var(--ink); margin:0; font-family:'Source Serif 4', Georgia, serif; line-height:1.6; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);}
+.wrap{max-width:900px; margin:0 auto; padding:2.5rem 1.1rem 5rem;}
+h1,h2,h3{font-family:'Zilla Slab', Georgia, serif; color:var(--ink); margin:0;}
+h1{font-size:clamp(1.8rem,6vw,2.6rem); font-weight:700; line-height:1.05;}
+h2{font-size:clamp(1.25rem,4vw,1.6rem); font-weight:700; margin-bottom:.3rem;}
+h3{font-size:1rem; font-weight:600; color:var(--ink-soft); margin-bottom:.4rem;}
+p{margin:.5rem 0;}
+.eyebrow{font-family:'IBM Plex Mono',monospace; font-size:.7rem; letter-spacing:.13em; text-transform:uppercase; color:var(--accent); display:flex; gap:.6rem; align-items:center;}
+.eyebrow::before{content:""; width:22px; height:2px; background:var(--accent); display:inline-block;}
+header.top{border-bottom:3px solid var(--ink); padding-bottom:1.4rem; margin-bottom:1.4rem;}
+.model-banner{background:var(--field-bg); color:var(--field-text); border-radius:2px; padding:.9rem 1.1rem; margin-top:1.2rem; font-family:'IBM Plex Mono',monospace; font-size:.78rem; line-height:1.5; border-left:4px solid var(--field-line);}
+section.sheet{margin-top:2rem; padding-top:1.3rem; border-top:1px solid var(--line);}
+.card{background:var(--card-bg); border:1px solid var(--line); border-radius:4px; padding:1.1rem 1.2rem; margin:1rem 0;}
+label{display:block; font-family:'IBM Plex Mono',monospace; font-size:.68rem; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); font-weight:700; margin:.7rem 0 .25rem;}
+label:first-child{margin-top:0;}
+input[type=text], input[type=date], input[type=number], select, textarea{
+  width:100%; background:var(--card-bg); border:1px solid var(--line); border-radius:3px;
+  padding:.55rem .7rem; font-family:'Source Serif 4',Georgia,serif; font-size:.92rem; color:var(--ink);
+}
+textarea{min-height:4.5rem; resize:vertical; font-family:inherit;}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:0 1rem;}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:0 1rem;}
+@media(max-width:640px){.grid2,.grid3{grid-template-columns:1fr}}
+.row-add{display:flex; gap:.5rem; align-items:flex-end; margin-top:.6rem;}
+.row-add > div{flex:1}
+button{
+  font-family:'IBM Plex Mono',monospace; font-size:.75rem; letter-spacing:.05em; text-transform:uppercase;
+  border:1px solid var(--accent); background:var(--accent); color:#fff; border-radius:3px;
+  padding:.55rem 1rem; cursor:pointer; font-weight:700;
+}
+button.secondary{background:transparent; color:var(--accent);}
+button.danger{background:transparent; color:var(--danger); border-color:var(--danger);}
+button.small{padding:.3rem .6rem; font-size:.65rem;}
+.actions{display:flex; gap:.5rem; flex-wrap:wrap; margin-top:1rem;}
+.chiplist{display:flex; flex-wrap:wrap; gap:.4rem; margin:.4rem 0;}
+.chip{background:var(--accent-soft); border:1px solid var(--accent); color:var(--accent); border-radius:12px; padding:.15rem .7rem; font-size:.72rem; font-family:'IBM Plex Mono',monospace; display:flex; align-items:center; gap:.4rem;}
+.chip button{background:none; border:none; color:var(--accent); padding:0; font-size:.9rem; line-height:1; cursor:pointer;}
+.subitem{background:var(--paper-2); border:1px solid var(--line); border-radius:3px; padding:.7rem .8rem; margin:.5rem 0; position:relative;}
+.subitem .remove{position:absolute; top:.5rem; right:.5rem;}
+.quote-flag{display:flex; align-items:center; gap:.4rem; font-family:'IBM Plex Mono',monospace; font-size:.72rem; color:var(--muted); margin-top:.3rem;}
+table{border-collapse:collapse; width:100%; font-size:.84rem; margin-top:.5rem;}
+th,td{border:1px solid var(--line); padding:.4rem .55rem; text-align:left; vertical-align:top;}
+th{background:var(--paper-2); font-family:'IBM Plex Mono',monospace; font-size:.66rem; letter-spacing:.05em; text-transform:uppercase;}
+.entry{border:1px solid var(--line); border-radius:5px; padding:1.2rem 1.3rem; margin:1.2rem 0; background:var(--card-bg);}
+.entry .rol{font-family:'IBM Plex Mono',monospace; font-size:.65rem; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); font-weight:700;}
+.entry .nombre{font-family:'Zilla Slab', serif; font-size:1.25rem; font-weight:700; margin:.15rem 0;}
+.entry .meta-line{font-family:'IBM Plex Mono',monospace; font-size:.72rem; color:var(--muted); margin-bottom:.6rem;}
+.quote-box{background:var(--accent-soft); border-left:4px solid var(--accent); border-radius:2px; padding:.6rem .8rem; margin:.4rem 0; font-style:italic; font-size:.86rem;}
+.empty{color:var(--muted); font-style:italic; padding:1.5rem; text-align:center; border:1px dashed var(--line); border-radius:4px;}
+.err{color:var(--danger); font-family:'IBM Plex Mono',monospace; font-size:.72rem; margin-top:.3rem; display:none;}
+footer{margin-top:3rem; padding-top:1.2rem; border-top:1px solid var(--line); font-family:'IBM Plex Mono',monospace; font-size:.7rem; color:var(--muted); text-align:center;}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@600;700&family=Source+Serif+4:wght@400;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div class="eyebrow">Interfaz 1 · Investigación de Usuarios</div>
+  <h1>Entrevista a Expertos y Estudio del Dominio</h1>
+  <div class="model-banner">
+    <b>REGISTRO DE CAMPO E INVESTIGACIÓN TÉCNICA</b> — Captura estructurada de entrevistas a expertos del dominio (LSM, visión por computadora, accesibilidad). Cada entrevista se guarda, puede editarse/borrarse, y exportarse a JSON/CSV.
+  </div>
+</header>
+
+<section class="sheet">
+  <div class="eyebrow">Nueva captura</div>
+  <h2 id="form-title">Agregar entrevista</h2>
+
+  <div class="card">
+    <h3>1 · Perfil del experto</h3>
+    <div class="grid3">
+      <div><label>Alias</label><input type="text" id="f-alias" placeholder="Dr. M. A. Sandoval"></div>
+      <div><label>Rol</label><input type="text" id="f-rol" placeholder="Investigador senior"></div>
+      <div><label>Dominio</label><input type="text" id="f-dominio" placeholder="Visión por computadora, LSM"></div>
+    </div>
+    <div class="grid3">
+      <div><label>Años de experiencia</label><input type="number" id="f-anios" min="0" placeholder="14"></div>
+      <div><label>Organización</label><input type="text" id="f-org" placeholder="UABC"></div>
+      <div><label>Fecha</label><input type="date" id="f-fecha"></div>
+    </div>
+    <label>Medio</label>
+    <select id="f-medio">
+      <option value="Presencial">Presencial</option>
+      <option value="Remoto">Remoto</option>
+    </select>
+    <div class="err" id="err-perfil">Alias y dominio son obligatorios.</div>
+  </div>
+
+  <div class="card">
+    <h3>2 · Guion dinámico (pregunta / respuesta)</h3>
+    <div id="guion-list"></div>
+    <div class="row-add">
+      <div><label>Pregunta</label><input type="text" id="g-pregunta" placeholder="¿Cuál es el principal desafío técnico...?"></div>
+      <div><label>Respuesta</label><textarea id="g-respuesta" placeholder="Respuesta del experto..."></textarea></div>
+    </div>
+    <div class="quote-flag"><input type="checkbox" id="g-cita"> Marcar respuesta como cita textual clave</div>
+    <div class="actions"><button type="button" class="secondary" onclick="agregarGuion()">+ Agregar pregunta</button></div>
+  </div>
+
+  <div class="card">
+    <h3>3 · Mapa de complejidad técnica</h3>
+    <label>Conceptos clave (Enter para agregar)</label>
+    <input type="text" id="f-conceptos-input" placeholder="Landmarking 3D" onkeydown="if(event.key==='Enter'){event.preventDefault(); agregarChip('conceptos','f-conceptos-input')}">
+    <div class="chiplist" id="chip-conceptos"></div>
+
+    <label>Jerga del dominio (Enter para agregar)</label>
+    <input type="text" id="f-jerga-input" placeholder="Dactilología vs. ideogramas" onkeydown="if(event.key==='Enter'){event.preventDefault(); agregarChip('jerga','f-jerga-input')}">
+    <div class="chiplist" id="chip-jerga"></div>
+
+    <label>Actores del ecosistema (Enter para agregar)</label>
+    <input type="text" id="f-actores-input" placeholder="Intérpretes, comunidad sorda" onkeydown="if(event.key==='Enter'){event.preventDefault(); agregarChip('actores','f-actores-input')}">
+    <div class="chiplist" id="chip-actores"></div>
+
+    <label>Dependencias entre componentes</label>
+    <textarea id="f-dependencias" placeholder="Cámara → MediaPipe → Normalización → LSTM/GRU → PLN → Interfaz"></textarea>
+  </div>
+
+  <div class="card">
+    <h3>4 · Restricciones y riesgos técnicos</h3>
+    <table id="tabla-riesgos">
+      <thead><tr><th>Riesgo</th><th>Impacto operativo</th><th>Mitigación</th><th></th></tr></thead>
+      <tbody id="riesgos-body"></tbody>
+    </table>
+    <div class="row-add">
+      <div><label>Riesgo</label><input type="text" id="r-riesgo"></div>
+      <div><label>Impacto</label><input type="text" id="r-impacto"></div>
+      <div><label>Mitigación</label><input type="text" id="r-mitigacion"></div>
+    </div>
+    <div class="actions"><button type="button" class="secondary" onclick="agregarRiesgo()">+ Agregar riesgo</button></div>
+  </div>
+
+  <div class="card">
+    <h3>5 · Referencias / fuentes recomendadas</h3>
+    <div id="ref-list" class="chiplist"></div>
+    <div class="row-add">
+      <div><label>Referencia</label><input type="text" id="f-ref-input" placeholder="Lugaresi, C. et al. (2019). MediaPipe..."></div>
+    </div>
+    <div class="actions"><button type="button" class="secondary" onclick="agregarChip('referencias','f-ref-input')">+ Agregar referencia</button></div>
+  </div>
+
+  <div class="card">
+    <h3>6 · Notas y siguientes pasos</h3>
+    <textarea id="f-notas" placeholder="Siguientes pasos acordados con el experto..."></textarea>
+  </div>
+
+  <div class="actions">
+    <button type="button" onclick="guardarEntrevista()">Guardar entrevista</button>
+    <button type="button" class="secondary" onclick="limpiarFormulario()">Limpiar formulario</button>
+  </div>
+</section>
+
+<section class="sheet">
+  <div class="eyebrow">Base de entrevistas</div>
+  <h2>Entrevistas capturadas (<span id="contador">0</span>)</h2>
+  <div class="actions" style="margin-bottom:1rem;">
+    <button type="button" class="secondary" onclick="exportarJSON()">Exportar JSON</button>
+    <button type="button" class="secondary" onclick="exportarCSV()">Exportar CSV</button>
+  </div>
+  <div id="lista-entrevistas"></div>
+</section>
+
+<footer>Investigación de Usuarios (Interfaz 1) — LSM-Connect · UABC Campus Ensenada</footer>
+</div>
+
+<script>
+let entrevistas = JSON.parse(localStorage.getItem('p4_entrevistas') || 'null');
+let guionTemp = [];
+let riesgosTemp = [];
+let chipsTemp = { conceptos: [], jerga: [], actores: [], referencias: [] };
+let editandoId = null;
+
+// --- Carga inicial con la entrevista real ya hecha por el equipo (Dr. Sandoval) ---
+if (!entrevistas) {
+  entrevistas = [{
+    id: 1,
+    alias: "Dr. M. A. Sandoval",
+    rol: "Investigador Senior y Docente de Sistemas Cognitivos e Inclusión Tecnológica",
+    dominio: "Visión por computadora, LSM, redes neuronales recurrentes y Edge Computing",
+    anios: 14,
+    organizacion: "UABC",
+    fecha: "2026-09-10",
+    medio: "Presencial",
+    guion: [
+      { pregunta: "¿Cuál es el principal desafío técnico al procesar secuencias de LSM en tiempo real en computadoras de ventanilla con hardware estándar?", respuesta: "Intentar procesar video crudo mediante redes convolucionales 3D pesadas (enfoque End-to-End) destruye la tasa de fotogramas (FPS). La clave es desacoplar la extracción anatómica de la clasificación temporal. Usar MediaPipe localmente reduce la dimensión de la imagen 1080p a matrices livianas de puntos 3D (X, Y, Z).", cita: true },
+      { pregunta: "¿Cómo solucionar la pérdida de seguimiento (oclusión de manos) y la variación de velocidad entre distintos hablantes de LSM?", respuesta: "Las señas de trámites duran entre 1.2 y 2.5 segundos. MediaPipe pierde seguimiento cuando las manos se cruzan. Se debe aplicar normalización espacial tomando como referencia el centro del torso y utilizar interpolación spline para fijar la secuencia a una longitud constante (ej. 30 frames).", cita: true },
+      { pregunta: "¿Qué métricas garantizan que la traducción bidireccional sea realmente comprensible para el usuario y el empleado?", respuesta: "Medir solo la precisión por seña individual oculta errores gramaticales en la oración. Se debe utilizar la Distancia de Levenshtein a nivel de palabras/frase para calcular el costo de edición entre la traducción generada y la intención real.", cita: true },
+      { pregunta: "¿Cómo abordar la privacidad de los estudiantes en ventanillas de atención pública?", respuesta: "En trámites universitarios se manejan datos sensibles. No debe grabarse ni almacenarse el flujo de video en disco bajo ninguna circunstancia.", cita: true }
+    ],
+    conceptos: ["Landmarking 3D", "Inferencia Edge", "Sliding Windows", "Interpolación Spline", "Distancia de Levenshtein", "Redes LSTM/GRU"],
+    jerga: ["Dactilología vs. Ideogramas", "Hand Mesh", "Latencia <1s", "Matriz (X,Y,Z)", "Vocabulario Institucional Cerrado"],
+    actores: ["Estudiantes sordos UABC", "Personal de ventanilla", "Equipo de desarrollo"],
+    dependencias: "Cámara USB 1080p → OpenCV → MediaPipe (21 landmarks) → Normalización espacial + Filtro de Kalman → LSTM/GRU → Módulo PLN (Levenshtein) → Interfaz Electron Dual-View",
+    riesgos: [
+      { riesgo: "Iluminación variable y oclusión de manos", impacto: "Pérdida de seguimiento de puntos clave por sombras en la ventanilla física.", mitigacion: "Normalización referenciada al esternón + filtro de Kalman." },
+      { riesgo: "Escasez de dataset para LSM académico", impacto: "Inexistencia de corpora públicos para términos como \"Kardex\", \"Revalidación\".", mitigacion: "Recolección y etiquetado de dataset propio limitado a 25-30 señas de UABC." },
+      { riesgo: "Hardware obsoleto en ventanillas", impacto: "Computadoras sin GPU dedicada pueden congelarse si procesan video a 60fps.", mitigacion: "Fijar captura a 30fps y cuantizar modelos a ONNX/TensorRT." }
+    ],
+    referencias: [
+      "Lugaresi, C. et al. (2019). MediaPipe: A framework for building perception pipelines. Google AI Edge.",
+      "Mejía-Pérez, K. et al. (2022). Automatic recognition of Mexican Sign Language using a depth camera and recurrent neural networks. Applied Sciences.",
+      "Cuevas Valencia, R. et al. (2025). Reconocimiento y traducción de la Lengua de Señas Mexicana mediante redes neuronales y dispositivos móviles. RIDE."
+    ],
+    notas: "Implementar normalización espacial tomando el esternón como origen ortogonal. Limitar estrictamente la inferencia al diccionario cerrado de 25-30 señas institucionales. Garantizar procesamiento volátil en RAM (cero almacenamiento de rostros en disco)."
+  }];
+  guardarStorage();
+}
+
+function guardarStorage(){
+  localStorage.setItem('p4_entrevistas', JSON.stringify(entrevistas));
+}
+
+function agregarChip(campo, inputId){
+  const input = document.getElementById(inputId);
+  const val = input.value.trim();
+  if(!val) return;
+  chipsTemp[campo].push(val);
+  input.value = '';
+  renderChips(campo);
+}
+function quitarChip(campo, idx){
+  chipsTemp[campo].splice(idx,1);
+  renderChips(campo);
+}
+function renderChips(campo){
+  const contId = campo === 'referencias' ? 'ref-list' : 'chip-' + campo;
+  const cont = document.getElementById(contId);
+  cont.innerHTML = '';
+  chipsTemp[campo].forEach((val, idx) => {
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.innerHTML = `<span>${escapeHtml(val)}</span><button type="button" onclick="quitarChip('${campo}',${idx})">×</button>`;
+    cont.appendChild(chip);
+  });
+}
+
+function agregarGuion(){
+  const pregunta = document.getElementById('g-pregunta').value.trim();
+  const respuesta = document.getElementById('g-respuesta').value.trim();
+  const cita = document.getElementById('g-cita').checked;
+  if(!pregunta || !respuesta) return;
+  guionTemp.push({ pregunta, respuesta, cita });
+  document.getElementById('g-pregunta').value = '';
+  document.getElementById('g-respuesta').value = '';
+  document.getElementById('g-cita').checked = false;
+  renderGuion();
+}
+function quitarGuion(idx){
+  guionTemp.splice(idx,1);
+  renderGuion();
+}
+function renderGuion(){
+  const cont = document.getElementById('guion-list');
+  cont.innerHTML = '';
+  guionTemp.forEach((g, idx) => {
+    const div = document.createElement('div');
+    div.className = 'subitem';
+    div.innerHTML = `<button type="button" class="danger small remove" onclick="quitarGuion(${idx})">Quitar</button>
+      <b>P:</b> ${escapeHtml(g.pregunta)}<br><b>R:</b> ${escapeHtml(g.respuesta)} ${g.cita ? '<span style="color:var(--accent);font-family:\'IBM Plex Mono\',monospace;font-size:.65rem;">★ cita clave</span>' : ''}`;
+    cont.appendChild(div);
+  });
+}
+
+function agregarRiesgo(){
+  const riesgo = document.getElementById('r-riesgo').value.trim();
+  const impacto = document.getElementById('r-impacto').value.trim();
+  const mitigacion = document.getElementById('r-mitigacion').value.trim();
+  if(!riesgo || !impacto || !mitigacion) return;
+  riesgosTemp.push({ riesgo, impacto, mitigacion });
+  document.getElementById('r-riesgo').value = '';
+  document.getElementById('r-impacto').value = '';
+  document.getElementById('r-mitigacion').value = '';
+  renderRiesgos();
+}
+function quitarRiesgo(idx){
+  riesgosTemp.splice(idx,1);
+  renderRiesgos();
+}
+function renderRiesgos(){
+  const cont = document.getElementById('riesgos-body');
+  cont.innerHTML = '';
+  riesgosTemp.forEach((r, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${escapeHtml(r.riesgo)}</td><td>${escapeHtml(r.impacto)}</td><td>${escapeHtml(r.mitigacion)}</td>
+      <td><button type="button" class="danger small" onclick="quitarRiesgo(${idx})">×</button></td>`;
+    cont.appendChild(tr);
+  });
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function limpiarFormulario(){
+  editandoId = null;
+  document.getElementById('form-title').textContent = 'Agregar entrevista';
+  ['f-alias','f-rol','f-dominio','f-anios','f-org','f-fecha','f-dependencias','f-notas'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-medio').value = 'Presencial';
+  guionTemp = []; riesgosTemp = [];
+  chipsTemp = { conceptos: [], jerga: [], actores: [], referencias: [] };
+  renderGuion(); renderRiesgos();
+  ['conceptos','jerga','actores','referencias'].forEach(renderChips);
+  document.getElementById('err-perfil').style.display = 'none';
+}
+
+function guardarEntrevista(){
+  const alias = document.getElementById('f-alias').value.trim();
+  const dominio = document.getElementById('f-dominio').value.trim();
+  if(!alias || !dominio){
+    document.getElementById('err-perfil').style.display = 'block';
+    return;
+  }
+  document.getElementById('err-perfil').style.display = 'none';
+
+  const data = {
+    id: editandoId || Date.now(),
+    alias, dominio,
+    rol: document.getElementById('f-rol').value.trim(),
+    anios: parseInt(document.getElementById('f-anios').value) || 0,
+    organizacion: document.getElementById('f-org').value.trim(),
+    fecha: document.getElementById('f-fecha').value,
+    medio: document.getElementById('f-medio').value,
+    guion: [...guionTemp],
+    conceptos: [...chipsTemp.conceptos],
+    jerga: [...chipsTemp.jerga],
+    actores: [...chipsTemp.actores],
+    dependencias: document.getElementById('f-dependencias').value.trim(),
+    riesgos: [...riesgosTemp],
+    referencias: [...chipsTemp.referencias],
+    notas: document.getElementById('f-notas').value.trim()
+  };
+
+  if(editandoId){
+    const idx = entrevistas.findIndex(e => e.id === editandoId);
+    entrevistas[idx] = data;
+  } else {
+    entrevistas.push(data);
+  }
+  guardarStorage();
+  limpiarFormulario();
+  renderLista();
+}
+
+function editarEntrevista(id){
+  const e = entrevistas.find(x => x.id === id);
+  if(!e) return;
+  editandoId = id;
+  document.getElementById('form-title').textContent = 'Editando: ' + e.alias;
+  document.getElementById('f-alias').value = e.alias;
+  document.getElementById('f-rol').value = e.rol;
+  document.getElementById('f-dominio').value = e.dominio;
+  document.getElementById('f-anios').value = e.anios;
+  document.getElementById('f-org').value = e.organizacion;
+  document.getElementById('f-fecha').value = e.fecha;
+  document.getElementById('f-medio').value = e.medio;
+  document.getElementById('f-dependencias').value = e.dependencias;
+  document.getElementById('f-notas').value = e.notas;
+  guionTemp = JSON.parse(JSON.stringify(e.guion));
+  riesgosTemp = JSON.parse(JSON.stringify(e.riesgos));
+  chipsTemp = { conceptos: [...e.conceptos], jerga: [...e.jerga], actores: [...e.actores], referencias: [...e.referencias] };
+  renderGuion(); renderRiesgos();
+  ['conceptos','jerga','actores','referencias'].forEach(renderChips);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function borrarEntrevista(id){
+  if(!confirm('¿Borrar esta entrevista?')) return;
+  entrevistas = entrevistas.filter(e => e.id !== id);
+  guardarStorage();
+  renderLista();
+}
+
+function renderLista(){
+  const cont = document.getElementById('lista-entrevistas');
+  document.getElementById('contador').textContent = entrevistas.length;
+  if(entrevistas.length === 0){
+    cont.innerHTML = '<div class="empty">Aún no hay entrevistas capturadas.</div>';
+    return;
+  }
+  cont.innerHTML = '';
+  entrevistas.forEach(e => {
+    const div = document.createElement('div');
+    div.className = 'entry';
+    div.innerHTML = `
+      <div class="rol">${escapeHtml(e.rol || 'Experto')}</div>
+      <div class="nombre">${escapeHtml(e.alias)}</div>
+      <div class="meta-line">${escapeHtml(e.dominio)} · ${e.anios} años · ${escapeHtml(e.organizacion)} · ${escapeHtml(e.medio)} ${e.fecha ? '· ' + e.fecha : ''}</div>
+      ${e.guion.map(g => `<p><b>P:</b> ${escapeHtml(g.pregunta)}</p>${g.cita ? `<div class="quote-box">"${escapeHtml(g.respuesta)}"</div>` : `<p style="font-size:.88rem;color:var(--ink-soft)">${escapeHtml(g.respuesta)}</p>`}`).join('')}
+      ${e.conceptos.length ? `<p><b>Conceptos clave:</b> ${e.conceptos.map(escapeHtml).join(', ')}</p>` : ''}
+      ${e.riesgos.length ? `<table><thead><tr><th>Riesgo</th><th>Impacto</th><th>Mitigación</th></tr></thead><tbody>${e.riesgos.map(r=>`<tr><td>${escapeHtml(r.riesgo)}</td><td>${escapeHtml(r.impacto)}</td><td>${escapeHtml(r.mitigacion)}</td></tr>`).join('')}</tbody></table>` : ''}
+      <div class="actions">
+        <button type="button" class="secondary small" onclick="editarEntrevista(${e.id})">Editar</button>
+        <button type="button" class="danger small" onclick="borrarEntrevista(${e.id})">Borrar</button>
+      </div>
+    `;
+    cont.appendChild(div);
+  });
+}
+
+function exportarJSON(){
+  const blob = new Blob([JSON.stringify(entrevistas, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'entrevistas_expertos.json'; a.click();
+}
+function exportarCSV(){
+  let csv = 'Alias,Rol,Dominio,Anios,Organizacion,Fecha,Medio,ConceptosClave,Jerga,Actores,Dependencias,Riesgos,Referencias,Notas\n';
+  entrevistas.forEach(e => {
+    const cell = s => `"${String(s).replace(/"/g,'""')}"`;
+    csv += [
+      cell(e.alias), cell(e.rol), cell(e.dominio), e.anios, cell(e.organizacion), cell(e.fecha), cell(e.medio),
+      cell(e.conceptos.join(' | ')), cell(e.jerga.join(' | ')), cell(e.actores.join(' | ')), cell(e.dependencias),
+      cell(e.riesgos.map(r=>`${r.riesgo}: ${r.impacto} -> ${r.mitigacion}`).join(' | ')),
+      cell(e.referencias.join(' | ')), cell(e.notas)
+    ].join(',') + '\n';
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'entrevistas_expertos.csv'; a.click();
+}
+
+// Inicial
+renderGuion(); renderRiesgos();
+['conceptos','jerga','actores','referencias'].forEach(renderChips);
+renderLista();
+</script>
+</body>
+</html>

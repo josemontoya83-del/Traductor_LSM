@@ -1,0 +1,66 @@
+/* Alto contraste, letra grande, botones grandes. Cambiar los colores aquí. */
+:root {
+  --fondo: #000000;
+  --panel: #14161a;
+  --texto: #ffffff;
+  --acento: #ffd400;
+  --mia: #1a56db;
+  --otra: #2b2f36;
+  --peligro: #c81e1e;
+  font-size: 20px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: system-ui, "Segoe UI", Arial, sans-serif;
+  line-height: 1.4;
+}
+button, input { font: inherit; }
+:focus-visible { outline: 4px solid var(--acento); outline-offset: 2px; }
+
+.pantalla { max-width: 960px; margin: 0 auto; padding: 1rem; min-height: 100vh; display: flex; flex-direction: column; gap: 1rem; }
+.centrada { align-items: center; justify-content: center; text-align: center; }
+h1 { margin: 0; font-size: 2rem; }
+.lead { font-size: 1.4rem; margin: 0; }
+
+.botones-grandes { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+.boton {
+  min-height: 56px; padding: 0.6rem 1.2rem; border-radius: 12px; cursor: pointer;
+  background: var(--panel); color: var(--texto); border: 3px solid var(--texto);
+}
+.boton:hover:not(:disabled) { background: #262a31; }
+.boton:disabled { opacity: 0.5; cursor: not-allowed; }
+.boton.grande { min-width: 260px; min-height: 140px; font-size: 1.6rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem; }
+.boton.principal { background: var(--acento); color: #000; border-color: var(--acento); font-weight: 700; }
+.boton.peligro { border-color: var(--peligro); }
+.icono { font-size: 2.4rem; }
+
+.barra { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; }
+.acciones { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+.aviso { background: #3a2a00; border: 3px solid var(--acento); border-radius: 12px; padding: 0.75rem 1rem; }
+.aviso p { margin: 0 0 0.5rem; }
+
+.mensajes { flex: 1; min-height: 240px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.6rem; padding: 0.5rem; background: var(--panel); border-radius: 12px; }
+.mensajes.compacta { flex: none; min-height: 0; max-height: 220px; }
+.vacio { color: #b5b9c2; margin: auto; }
+.burbuja { max-width: 80%; padding: 0.6rem 0.9rem; border-radius: 14px; display: flex; flex-direction: column; font-size: 1.2rem; }
+.burbuja .quien { font-size: 0.75rem; opacity: 0.85; }
+.burbuja.mia { align-self: flex-end; background: var(--mia); }
+.burbuja.otra { align-self: flex-start; background: var(--otra); }
+
+.formulario { display: flex; gap: 0.75rem; }
+.campo { flex: 1; min-height: 56px; padding: 0.5rem 1rem; border-radius: 12px; border: 3px solid var(--texto); background: var(--fondo); color: var(--texto); }
+
+.camara-zona { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+.video-espejo { width: 100%; max-width: 640px; border-radius: 12px; background: #111; transform: scaleX(-1); /* espejo SOLO visual */ }
+.estado { margin: 0; font-size: 1.2rem; padding: 0.3rem 1rem; border-radius: 999px; border: 2px solid var(--texto); }
+.estado.firmando { background: var(--acento); color: #000; border-color: var(--acento); }
+.palabra-grande { font-size: 3rem; font-weight: 800; text-align: center; margin: 0; min-height: 4rem; color: var(--acento); }
+.duda { text-align: center; }
+.duda h2 { margin: 0 0 0.75rem; }
+.opciones { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }

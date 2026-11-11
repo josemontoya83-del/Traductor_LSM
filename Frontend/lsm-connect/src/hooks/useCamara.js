@@ -13,6 +13,8 @@ export function useCamara({ activa, onPalabra, onDuda }) {
   const [estado, setEstado] = useState("reposo"); // reposo | firmando
   const [error, setError] = useState(null);
   const [reintentos, setReintentos] = useState(0);
+  const [latenciaMs, setLatenciaMs] = useState(null);
+  const t0 = useRef(0);
   const ultimoId = useRef(0);
   // Para que los callbacks siempre sean los más recientes sin reiniciar la cámara
   const cbPalabra = useRef(onPalabra);
@@ -40,7 +42,11 @@ export function useCamara({ activa, onPalabra, onDuda }) {
       }
       canvas.getContext("2d").drawImage(video, 0, 0, FRAME_ANCHO, FRAME_ALTO);
       canvas.toBlob(
-        (blob) => blob && blob.arrayBuffer().then((buf) => vivo && ws.readyState === WebSocket.OPEN && ws.send(buf)),
+        (blob) => blob && blob.arrayBuffer().then((buf) => {
+            if (!vivo || ws.readyState !== WebSocket.OPEN) return;
+            t0.current = performance.now();
+            ws.send(buf);
+          }),
         "image/jpeg",
         FRAME_CALIDAD
       );
@@ -66,6 +72,7 @@ export function useCamara({ activa, onPalabra, onDuda }) {
       ws.onclose = () => vivo && setError((e) => e ?? "servidor");
       ws.onmessage = (e) => {
         const r = JSON.parse(e.data);
+        if (t0.current) setLatenciaMs(Math.round(performance.now() - t0.current));
         setEstado(r.estado === "firmando" ? "firmando" : "reposo");
         if ((r.estado === "palabra" || r.estado === "duda") && r.id > ultimoId.current) {
           ultimoId.current = r.id; // cada evento se procesa una sola vez
@@ -84,5 +91,5 @@ export function useCamara({ activa, onPalabra, onDuda }) {
     };
   }, [activa, reintentos]);
 
-  return { videoRef, estado, error, reintentar: () => setReintentos((n) => n + 1) };
+  return { videoRef, estado, error, latenciaMs, reintentar: () => setReintentos((n) => n + 1) };
 }

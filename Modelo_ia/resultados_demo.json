@@ -1,0 +1,12 @@
+{
+  "muestras_prueba": 171,
+  "precision_top1": 0.813,
+  "precision_top3": 0.889,
+  "frases": {
+    "frases": 300,
+    "distancia_media": 0.743,
+    "word_error_rate": 0.187,
+    "frases_exactas": 0.467
+  },
+  "nota": "Prueba con personas ya vistas (reps 7-12). Con una persona nueva baja mucho: ver README."
+}

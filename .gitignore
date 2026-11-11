@@ -5,3 +5,6 @@ __pycache__/
 *.pyc
 node_modules/
 .env
+
+# Segmentos capturados en modo diagnóstico (LSM_DEBUG=1)
+Pruebas/debug_segmentos/

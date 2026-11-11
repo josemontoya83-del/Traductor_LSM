@@ -91,7 +91,7 @@ export default function App() {
             <header className="topbar-wrapper">
                 <div className="topbar">
                     <div className="brand">
-                        <img src="/escudo-uabc.svg" alt="Escudo UABC" className="brand__escudo" />
+                        <img src="/logo-uabc.png" alt="Escudo UABC" className="brand__escudo" />
                         <div className="brand__divisor"></div>
                         <h1 className="brand__nombre">
                             UABC <span className="brand__sub">LSM-Connect</span>
@@ -261,7 +261,7 @@ export default function App() {
                     <a href="#" className="pie__enlace">Política de Privacidad</a>
                 </div>
                 <div className="pie__banda">
-                    <img src="/escudo-uabc.svg" alt="" className="pie__escudo-mini" />
+                    <img src="/logo-uabc.png" alt="" className="pie__escudo-mini" />
                 </div>
             </footer>
         </div>

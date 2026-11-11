@@ -512,3 +512,14 @@ body {
         display: none;
     }
 }
+
+.pie__escudo-mini {
+    height: 30px;
+    width: auto;
+}
+
+.pie__banda {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

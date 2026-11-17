@@ -9,6 +9,7 @@ import asyncio
 import os
 import json
 from collections import defaultdict, deque
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -16,9 +17,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
 
 from .contrato import MensajeChat
-from .motores import CLASES_DEFECTO, crear_motor
+from .motores import crear_motor, leer_clases, precargar
 
-app = FastAPI(title="LSM-Connect")
+
+@asynccontextmanager
+async def ciclo_de_vida(_: FastAPI):
+    # Carga el modelo y MediaPipe al arrancar (en un hilo, para no congelar el servidor).
+    await asyncio.to_thread(precargar)
+    yield
+
+
+app = FastAPI(title="LSM-Connect", lifespan=ciclo_de_vida)
 app.add_middleware(CORSMiddleware, allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
                    allow_methods=["*"], allow_headers=["*"])
 
@@ -55,7 +64,7 @@ def salud():
 
 @app.get("/clases")
 def clases():
-    return {"clases": CLASES_DEFECTO}
+    return {"clases": leer_clases()}
 
 
 @app.post("/chat/{sala}/cerrar")
@@ -69,7 +78,7 @@ async def cerrar_sala(sala: str):
 async def ws_camara(ws: WebSocket):
     """Entrada: frames JPEG (binario). Salida: un ResultadoCamara (JSON) por frame."""
     await ws.accept()
-    motor = crear_motor()
+    motor = await asyncio.to_thread(crear_motor)  # en un hilo: no congela el resto del servidor
     try:
         while True:
             msg = await ws.receive()
@@ -86,6 +95,8 @@ async def ws_camara(ws: WebSocket):
                     pass
     except WebSocketDisconnect:
         pass
+    finally:
+        motor.cerrar()
 
 
 @app.websocket("/ws/chat")

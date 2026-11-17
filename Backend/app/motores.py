@@ -11,6 +11,7 @@ Segmentación del MotorReal (igual que como se grabó el dataset: una seña = un
 import json
 import os
 import sys
+import threading
 import time
 from collections import deque
 from pathlib import Path
@@ -24,8 +25,19 @@ RAIZ = Path(__file__).resolve().parents[2]
 MODELO_IA = RAIZ / "Modelo_ia"
 DEBUG = os.getenv("LSM_DEBUG", "0") == "1"   # imprime cada segmento y guarda sus keypoints
 DEBUG_DIR = RAIZ / "Pruebas" / "debug_segmentos"
+# Respaldo por si no existe Modelo_ia/clases_tramites.json (la lista real sale de ahí).
 CLASES_DEFECTO = ["inscripcion", "reinscripcion", "kardex", "constancia", "foto", "credencial",
                   "documentos", "solicitar", "recoger", "entrega", "si", "no", "duda", "gracias"]
+
+
+def leer_clases() -> list[str]:
+    """Palabras que reconoce el modelo, tal como se guardaron al entrenarlo (sin 'reposo').
+    Así el front y el servidor siempre muestran la misma lista que el modelo."""
+    try:
+        clases = json.loads((MODELO_IA / "clases_tramites.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return list(CLASES_DEFECTO)
+    return [c for c in clases if c != "reposo"]
 
 
 class Motor(Protocol):
@@ -33,6 +45,7 @@ class Motor(Protocol):
 
     def procesar_frame(self, jpeg: bytes) -> ResultadoCamara: ...
     def reiniciar(self) -> None: ...
+    def cerrar(self) -> None: ...
 
 
 class MotorSimulado:
@@ -40,10 +53,14 @@ class MotorSimulado:
     nombre = "simulado"
 
     def __init__(self) -> None:
+        self._clases = leer_clases()
         self.reiniciar()
 
     def reiniciar(self) -> None:
         self._n, self._ciclo, self._id = 0, 0, 0
+
+    def cerrar(self) -> None:
+        pass
 
     def procesar_frame(self, jpeg: bytes) -> ResultadoCamara:
         pos = self._n % 60
@@ -54,8 +71,8 @@ class MotorSimulado:
             return ResultadoCamara(id=self._id, estado="reposo")
         if pos < 30:
             return ResultadoCamara(id=self._id, estado="firmando")
-        palabra = CLASES_DEFECTO[self._ciclo % len(CLASES_DEFECTO)]
-        otras = [c for c in CLASES_DEFECTO if c != palabra][:2]
+        palabra = self._clases[self._ciclo % len(self._clases)]
+        otras = [c for c in self._clases if c != palabra][:2]
         self._id += 1
         if self._ciclo % 4 == 3:  # simula que duda
             top3 = [Candidato(palabra=palabra, prob=0.46), Candidato(palabra=otras[0], prob=0.31),
@@ -87,6 +104,50 @@ def _cargar_modelo():
     return _MODELO, _CLASES
 
 
+# MediaPipe Holistic tarda ~2 s en crearse. Se reutilizan entre conexiones (al cambiar de modo
+# en la página se reconecta la cámara) en lugar de crear uno nuevo cada vez.
+_HOLISTICS: list = []
+_HOLISTICS_LOCK = threading.Lock()
+
+
+def _nuevo_holistic():
+    import mediapipe as mp
+
+    # mismos parámetros con los que se grabó el dataset
+    return mp.solutions.holistic.Holistic(min_detection_confidence=0.85, min_tracking_confidence=0.25)
+
+
+def _tomar_holistic():
+    with _HOLISTICS_LOCK:
+        if _HOLISTICS:
+            return _HOLISTICS.pop()
+    return _nuevo_holistic()
+
+
+def _devolver_holistic(holistic) -> None:
+    with _HOLISTICS_LOCK:
+        _HOLISTICS.append(holistic)
+
+
+def usa_motor_real() -> bool:
+    return os.getenv("LSM_MOTOR", "simulado").lower() == "real"
+
+
+def precargar() -> None:
+    """Se llama al arrancar el servidor: deja listos el modelo y MediaPipe para que la primera
+    conexión de la cámara responda de inmediato (sin esto tardaba ~30 s)."""
+    if not usa_motor_real():
+        return
+    import cv2
+
+    modelo, _ = _cargar_modelo()
+    modelo.predict(np.zeros((1, 30, 226), np.float32), verbose=0)  # la 1a predicción es lenta
+    holistic = _nuevo_holistic()
+    holistic.process(np.zeros((480, 640, 3), np.uint8))  # carga los modelos internos de MediaPipe
+    cv2.imdecode(cv2.imencode(".jpg", np.zeros((8, 8, 3), np.uint8))[1], cv2.IMREAD_COLOR)
+    _devolver_holistic(holistic)
+
+
 class MotorReal:
     nombre = "real"
     UMBRAL_CONFIANZA = float(os.getenv("LSM_UMBRAL", "0.70"))  # debajo de esto -> "duda"
@@ -104,18 +165,20 @@ class MotorReal:
     MIN_ACTIVOS = 4           # frames con mano en posición de firmar; menos = ruido, se descarta
 
     def __init__(self) -> None:
-        import mediapipe as mp
-
         self._modelo, self._clases = _cargar_modelo()
         from captura_dataset_tramites import extraer_keypoints_msl150, remuestrear
         from preprocesar import UMBRAL_REPOSO, normalizar_secuencia
 
         self._extraer, self._remuestrear = extraer_keypoints_msl150, remuestrear
         self._normalizar, self._umbral_reposo = normalizar_secuencia, UMBRAL_REPOSO
-        # mismos parámetros con los que se grabó el dataset
-        self._holistic = mp.solutions.holistic.Holistic(min_detection_confidence=0.85,
-                                                        min_tracking_confidence=0.25)
+        self._holistic = _tomar_holistic()
         self.reiniciar()
+
+    def cerrar(self) -> None:
+        """Al desconectarse la cámara, deja MediaPipe listo para la siguiente conexión."""
+        if self._holistic is not None:
+            _devolver_holistic(self._holistic)
+            self._holistic = None
 
     def reiniciar(self) -> None:
         self._segmento: list[np.ndarray] = []
@@ -241,4 +304,4 @@ class MotorReal:
 
 def crear_motor() -> Motor:
     """LSM_MOTOR=simulado (defecto) | real"""
-    return MotorReal() if os.getenv("LSM_MOTOR", "simulado").lower() == "real" else MotorSimulado()
+    return MotorReal() if usa_motor_real() else MotorSimulado()

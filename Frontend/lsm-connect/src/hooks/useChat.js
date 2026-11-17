@@ -4,6 +4,10 @@ import { WS, API, SALA } from "../config.js";
 /**
  * Conexión al chat del backend. Se reconecta sola si se cae.
  * estado: "conectando" | "conectado" | "caido"
+ *
+ * TODAVÍA NO SE USA: App.jsx muestra alumno y empleado en una sola pantalla. Este hook,
+ * pantallas/Chat.jsx y componentes/ListaMensajes.jsx son la base para separar la pantalla
+ * del alumno y la del empleado (pendiente de la entrega final).
  */
 export function useChat(rol) {
   const [mensajes, setMensajes] = useState([]);

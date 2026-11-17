@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { API } from "./config.js";
 import { useCamara } from "./hooks/useCamara.js";
 import { bonita, PALABRAS, TRAMITES_CLAVE } from "./palabras.js";
 
@@ -22,6 +23,16 @@ export default function App() {
     const [texto, setTexto] = useState("");
     const [escrito, setEscrito] = useState("");   // lo que el alumno escribe con el teclado
     const [vista, setVista] = useState(false);
+    const [palabras, setPalabras] = useState(PALABRAS); // se reemplaza por la lista del modelo
+
+    // La lista real de palabras la da el servidor (sale del modelo entrenado).
+    // Si el servidor no responde, se queda la lista de respaldo de palabras.js.
+    useEffect(() => {
+        fetch(`${API}/clases`)
+            .then((r) => r.json())
+            .then((d) => Array.isArray(d.clases) && d.clases.length && setPalabras(d.clases))
+            .catch(() => {});
+    }, []);
 
     function agregar(palabra) {
         if (TRAMITES_CLAVE.includes(palabra)) setTramite(bonita(palabra));
@@ -112,7 +123,7 @@ export default function App() {
                         {modo === "senas" ? "Estas son las señas que el sistema reconoce." : "Toca las palabras o escribe tu mensaje."}
                     </p>
                     <ul className="tramites">
-                        {PALABRAS.map((p) => (
+                        {palabras.map((p) => (
                             <li key={p}>
                                 {modo === "palabras" ? (
                                     <button className="btn tramite" onClick={() => tocarPalabra(p)}>{bonita(p)}</button>
@@ -146,6 +157,16 @@ export default function App() {
                             {estado === "firmando" && <div className="buffer" style={{ zIndex: 1 }}></div>}
                             <span className="camara__aviso" style={{ position: "relative", zIndex: 1 }}>Procesado en memoria. Sin video guardado.</span>
                         </div>
+
+                        {/* Cómo firmar: lo que el sistema necesita para reconocer bien la seña */}
+                        <details className="guia" open>
+                            <summary>Cómo hacer las señas</summary>
+                            <ol>
+                                <li>Colócate de modo que se vean <strong>tu cabeza, hombros y pecho</strong>.</li>
+                                <li>Haz las señas con la <strong>mano derecha</strong>.</li>
+                                <li>Al terminar cada seña, <strong>baja las manos</strong> y espera un segundo.</li>
+                            </ol>
+                        </details>
 
                         {error ? (
                             <div role="alert" style={{ margin: "10px 0" }}>

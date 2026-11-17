@@ -91,7 +91,13 @@ def guardar_si_es_valida(secuencia, frames_con_mano, duracion, carpeta, senante_
 def main() -> None:
     nombre_sena = input("Nombre de la seña (ej. beca, kardex, inscripcion): ").strip().lower()
     senante_id = input("Tu identificador (ej. tony, alejandro, diego): ").strip().lower()
-    indice_camara = int(input("Índice de cámara (0 = laptop; revisa con detectar_camaras.py) [0]: ") or 0)
+    from detectar_camaras import primera_camara_disponible
+
+    detectada = primera_camara_disponible()
+    if detectada is None:
+        raise RuntimeError("No se encontró ninguna cámara disponible. Revisa que esté conectada.")
+    respuesta = input(f"Índice de cámara (Enter = usar la detectada, {detectada}): ").strip()
+    indice_camara = int(respuesta) if respuesta else detectada
 
     carpeta = os.path.join(DATA_DIR, nombre_sena)
     os.makedirs(carpeta, exist_ok=True)

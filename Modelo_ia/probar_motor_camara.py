@@ -6,7 +6,7 @@ cámara, SIN navegador ni WebSocket. Sirve para saber dónde está la falla:
   - si aquí también falla -> el problema está en la cámara, el encuadre o el modelo.
 
 Uso (raíz del repo, venv activo):
-    python Modelo_ia/probar_motor_camara.py            # cámara 0
+    python Modelo_ia/probar_motor_camara.py            # usa la primera cámara disponible
     python Modelo_ia/probar_motor_camara.py --camara 1
 Q = salir.
 """
@@ -27,8 +27,14 @@ from captura_dataset_tramites import dibujar  # noqa: E402  (Modelo_ia ya queda 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--camara", type=int, default=0)
+    ap.add_argument("--camara", type=int, default=None, help="índice; si no se da, se detecta solo")
     a = ap.parse_args()
+    if a.camara is None:
+        from detectar_camaras import primera_camara_disponible
+
+        a.camara = primera_camara_disponible()
+        if a.camara is None:
+            sys.exit("No se encontró ninguna cámara disponible.")
 
     motor = MotorReal()
     cap = cv2.VideoCapture(a.camara, cv2.CAP_DSHOW)  # igual que al grabar el dataset

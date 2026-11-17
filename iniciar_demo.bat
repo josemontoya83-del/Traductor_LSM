@@ -59,8 +59,20 @@ start "LSM Backend" /d "%~dp0Backend" cmd /k ""%PY%" -m uvicorn app.main:app --p
 start "LSM Frontend" /d "%~dp0Frontend\lsm-connect" cmd /k "npm run dev"
 
 echo.
-echo Esperando a que arranque todo...
-timeout /t 8 /nobreak >nul
+echo Esperando a que el servidor cargue el modelo (puede tardar ~30 s la primera vez)...
+set /a ESPERA=0
+:esperar_backend
+curl.exe -s -o nul http://127.0.0.1:8000/salud && goto backend_listo
+set /a ESPERA+=1
+if %ESPERA% GEQ 120 (
+  echo [AVISO] El servidor no respondio en 2 minutos. Revisa la ventana "LSM Backend".
+  goto abrir_navegador
+)
+timeout /t 1 /nobreak >nul
+goto esperar_backend
+:backend_listo
+echo Servidor listo.
+:abrir_navegador
 start "" "http://localhost:5173"
 
 echo.

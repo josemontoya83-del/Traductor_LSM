@@ -20,7 +20,9 @@ export function bonita(palabra) {
     return BONITAS[palabra] ?? palabra.charAt(0).toUpperCase() + palabra.slice(1);
 }
 
-// Las 14 palabras que el modelo reconoce (en el orden en que se muestran).
+// Lista de RESPALDO: la lista real la manda el servidor (GET /clases), que la lee del modelo
+// entrenado. Esta solo se usa si el servidor no responde. Si se agrega una palabra al modelo,
+// basta con ponerle aquí su forma con acentos (si no, se muestra con mayúscula inicial).
 export const PALABRAS = Object.keys(BONITAS);
-// De ellas, las que son un trámite (para la etiqueta del panel del empleado).
-export const TRAMITES_CLAVE = ["inscripcion", "reinscripcion", "kardex", "constancia", "credencial", "documentos"];
+// Las que son un trámite (para la etiqueta del panel del empleado).
+export const TRAMITES_CLAVE = ["inscripcion", "reinscripcion", "kardex", "constancia", "credencial", "documentos", "beca"];

@@ -17,6 +17,7 @@ imageio-ffmpeg==0.6.0
 # Servidor
 fastapi==0.115.0
 uvicorn[standard]==0.30.6
+python-multipart==0.0.9
 
 # Pruebas automáticas (python -m pytest)
 pytest==8.3.5

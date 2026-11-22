@@ -21,6 +21,7 @@ from lsm import modelos
 from lsm.vocabulario import cargar as cargar_vocabulario
 
 from .contrato import ConfigCamara, ResultadoCamara
+from .grabacion import router as router_grabacion
 
 _MODELOS_LOCK = threading.Lock()
 _BASE = None   # MotorLSM "plantilla": los modelos se cargan una vez y se comparten entre conexiones
@@ -64,6 +65,7 @@ async def ciclo_de_vida(_: FastAPI):
 app = FastAPI(title="LSM-Connect", lifespan=ciclo_de_vida)
 app.add_middleware(CORSMiddleware, allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?",
                    allow_methods=["*"], allow_headers=["*"])
+app.include_router(router_grabacion)
 
 
 @app.get("/salud")

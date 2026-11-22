@@ -32,6 +32,7 @@ class Toma:
     parar_al_bajar: bool
     movimiento: bool = False
     modo: Optional[str] = None   # deletreo: "deletreo" o "numeros"
+    pista: str = ""              # aclaración del significado (vocabulario)
 
     @property
     def nombre(self) -> str:
@@ -51,7 +52,8 @@ def _elementos(fuente: str, sesion: str, prot: dict, vocab: Vocabulario) -> list
         return [dict(etiqueta=n["id"], texto=n["texto"], movimiento=n["movimiento"]) for n in vocab.numeros]
     if fuente.startswith("dominio:"):
         dominio = fuente.split(":", 1)[1]
-        return [dict(etiqueta=s["id"], texto=s["texto"]) for s in vocab.dominios[dominio]["senas"]]
+        return [dict(etiqueta=s["id"], texto=s["texto"], pista=s.get("pista", ""))
+                for s in vocab.dominios[dominio]["senas"]]
     if fuente == "deletreo":
         return [dict(etiqueta=normalizar(p), texto=p, modo="numeros" if p.isdigit() else "deletreo")
                 for p in prot["deletreo"][sesion]]
@@ -97,5 +99,5 @@ def tomas(persona: str, sesion: str, bloques=None, incluir_opcionales: bool = Fa
                     texto=e["texto"], instruccion=prot["instrucciones"][instr_clave], repeticion=previas + r + 1,
                     segundos_max=prot["segundos_maximos"][b["tipo"]],
                     parar_al_bajar=prot["parar_al_bajar_manos"][b["tipo"]],
-                    movimiento=bool(e.get("movimiento")), modo=e.get("modo")))
+                    movimiento=bool(e.get("movimiento")), modo=e.get("modo"), pista=e.get("pista", "")))
     return salida

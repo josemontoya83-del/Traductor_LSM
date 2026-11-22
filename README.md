@@ -4,7 +4,7 @@ Sistema que reconoce **Lengua de Señas Mexicana (LSM)** con una cámara y la mu
 
 Proyecto del Grupo 952, UABC Ensenada. Primer lugar de uso: **Servicios Escolares**.
 
-> **Estado:** listo para **grabar el dataset con personas sordas** (ver [`protocolo/PROTOCOLO_GRABACION.md`](protocolo/PROTOCOLO_GRABACION.md)). Todavía no hay modelos entrenados: se generan con esas grabaciones. Mientras tanto, la interfaz funciona en modo simulado.
+> **Estado:** listo para **grabar el dataset con personas sordas**, que graban **solas** en el navegador siguiendo instrucciones visuales (ver [`protocolo/PROTOCOLO_GRABACION.md`](protocolo/PROTOCOLO_GRABACION.md)). Todavía no hay modelos entrenados: se generan con esas grabaciones. Mientras tanto, la interfaz funciona en modo simulado.
 
 ---
 
@@ -57,13 +57,13 @@ herramientas/           captura.py, extraer_puntos.py, revisar_datos.py, entrena
                         entrenar_senas.py, exportar_respuestas.py, detectar_camaras.py
 vocabulario/            letras.json, respuestas.json, dominios/general.json, dominios/escolar.json
 protocolo/              protocolo.json (qué se graba), PROTOCOLO_GRABACION.md, consentimiento, particion.json
-Backend/app/            Servidor FastAPI (main.py) y contrato de mensajes (contrato.py)
-Frontend/lsm-connect/   Interfaz React
+Backend/app/            Servidor FastAPI: ventanilla (main.py), grabación en el navegador (grabacion.py), contrato
+Frontend/lsm-connect/   Interfaz React: ventanilla (src/App.jsx) y grabación en autoservicio (src/grabacion/, ruta /grabar)
 tests/                  Pruebas automáticas (con datos sintéticos, sin cámara)
 modelos/                Modelos entrenados (no se suben a git)
 datos/                  Videos y puntos grabados (NO se suben a git)
 entregas/               Documentación y prototipos de las entregas del curso
-grabar.bat              Menú de grabación para el operador
+grabar.bat              Menú de grabación (abre la grabación en el navegador)
 iniciar_demo.bat        Arranca servidor + interfaz      detener_demo.bat   Apaga todo
 ```
 
@@ -82,8 +82,8 @@ python -m pytest                # deben pasar todas las pruebas
 
 | Qué | Cómo |
 |---|---|
-| **Grabar** (operador) | Doble clic en `grabar.bat` → 1 probar cámara · 2 grabar sesión · 3 ver avance |
-| Extraer puntos de lo grabado | `python herramientas\extraer_puntos.py` |
+| **Grabar** | Doble clic en `grabar.bat` → **1**: abre `http://localhost:5173/grabar`. El equipo registra a la persona y ella graba sola |
+| Extraer puntos de lo grabado | `grabar.bat` → 3, o `python herramientas\extraer_puntos.py` |
 | Ver avance y tomas a repetir | `python herramientas\revisar_datos.py --avisos` |
 | Entrenar | `python herramientas\entrenar_letras.py` y `python herramientas\entrenar_senas.py` |
 | Prueba final (personas nunca vistas) | los mismos con `--prueba` (ver `protocolo/particion.json`) |

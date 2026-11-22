@@ -1,7 +1,7 @@
 {
   "dominio": "general",
   "nombre": "General",
-  "descripcion": "Señas que sirven en CUALQUIER ventanilla. Siempre están activas.",
+  "descripcion": "Señas que sirven en CUALQUIER ventanilla. Siempre están activas. 'pista' (opcional) aclara qué significa la palabra durante la grabación.",
   "senas": [
     {
       "id": "hola",
@@ -33,31 +33,38 @@
     },
     {
       "id": "repetir",
-      "texto": "Repetir"
+      "texto": "Repetir",
+      "pista": "Pide que te lo repitan"
     },
     {
       "id": "esperar",
-      "texto": "Esperar"
+      "texto": "Esperar",
+      "pista": "Esperar un momento"
     },
     {
       "id": "donde",
-      "texto": "¿Dónde?"
+      "texto": "¿Dónde?",
+      "pista": "Pregunta: ¿dónde?"
     },
     {
       "id": "cuando",
-      "texto": "¿Cuándo?"
+      "texto": "¿Cuándo?",
+      "pista": "Pregunta: ¿cuándo?"
     },
     {
       "id": "cuanto",
-      "texto": "¿Cuánto?"
+      "texto": "¿Cuánto?",
+      "pista": "Pregunta: ¿cuánto? (precio o cantidad)"
     },
     {
       "id": "que",
-      "texto": "¿Qué?"
+      "texto": "¿Qué?",
+      "pista": "Pregunta: ¿qué?"
     },
     {
       "id": "como",
-      "texto": "¿Cómo?"
+      "texto": "¿Cómo?",
+      "pista": "Pregunta: ¿cómo?"
     },
     {
       "id": "quiero",
@@ -69,7 +76,8 @@
     },
     {
       "id": "tengo",
-      "texto": "Tengo"
+      "texto": "Tengo",
+      "pista": "Yo tengo..."
     },
     {
       "id": "pagar",
@@ -81,7 +89,8 @@
     },
     {
       "id": "documento",
-      "texto": "Documento"
+      "texto": "Documento",
+      "pista": "Un papel o documento"
     },
     {
       "id": "hoy",
@@ -93,11 +102,13 @@
     },
     {
       "id": "nombre",
-      "texto": "Nombre"
+      "texto": "Nombre",
+      "pista": "Tu nombre"
     },
     {
       "id": "correo",
-      "texto": "Correo"
+      "texto": "Correo",
+      "pista": "Correo electrónico"
     },
     {
       "id": "telefono",
@@ -105,15 +116,18 @@
     },
     {
       "id": "problema",
-      "texto": "Problema"
+      "texto": "Problema",
+      "pista": "Tengo un problema"
     },
     {
       "id": "cita",
-      "texto": "Cita"
+      "texto": "Cita",
+      "pista": "Una cita o turno para que te atiendan"
     },
     {
       "id": "listo",
-      "texto": "Listo / Terminé"
+      "texto": "Listo",
+      "pista": "Ya terminé"
     },
     {
       "id": "bien",

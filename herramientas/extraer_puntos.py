@@ -4,9 +4,10 @@ extraer_puntos.py — Saca los puntos de MediaPipe de todos los videos grabados.
     python herramientas/extraer_puntos.py              # solo los videos que aún no tienen puntos
     python herramientas/extraer_puntos.py --rehacer    # todos (p. ej. si cambió lsm/puntos.py)
 
-Lee datos/videos/**/<clip>.mp4 y escribe datos/puntos/**/<clip>.npz con el MISMO extractor
+Lee datos/videos/**/<clip>.mp4 o .webm y escribe datos/puntos/**/<clip>.npz con el MISMO extractor
 que usa el servidor en vivo (lsm/puntos.py). Los tiempos de cada cuadro salen del .json que
-guardó la captura (los videos de cámara web no siempre van a fps constante).
+guardó la captura clásica o, en los videos del navegador, de la marca de tiempo de cada cuadro
+(las cámaras web no siempre van a fps constante).
 """
 import argparse
 import sys
@@ -27,21 +28,25 @@ def extraer_video(ruta_video: Path, tiempos=None, holistic=None) -> dict:
     holistic = holistic or P.crear_holistic()
     cap = cv2.VideoCapture(str(ruta_video))
     fps = cap.get(cv2.CAP_PROP_FPS) or 30
-    cuadros = []
+    cuadros, msegs = [], []
     try:
         while True:
             ok, frame = cap.read()
             if not ok:
                 break
+            msegs.append(cap.get(cv2.CAP_PROP_POS_MSEC))
             cuadros.append(P.procesar_imagen(holistic, frame))
     finally:
         cap.release()
         if cerrar:
             holistic.close()
+    marcas = np.asarray(msegs, np.float64) / 1000
     if tiempos is not None and len(tiempos) >= len(cuadros):
-        t = np.asarray(tiempos[:len(cuadros)], np.float64)
+        t = np.asarray(tiempos[:len(cuadros)], np.float64)          # captura clásica: tiempos exactos
+    elif len(marcas) > 1 and np.all(np.diff(marcas) > 0):
+        t = marcas - marcas[0]                                       # navegador (.webm): marca de cada cuadro
     else:
-        t = np.arange(len(cuadros)) / fps
+        t = np.arange(len(cuadros)) / (fps if 1 <= fps <= 120 else 30)
     return P.apilar(cuadros, t)
 
 

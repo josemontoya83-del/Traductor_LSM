@@ -43,7 +43,8 @@ import numpy as np  # noqa: E402
 from PIL import Image, ImageDraw, ImageFont  # noqa: E402
 
 from lsm import puntos as P  # noqa: E402
-from lsm.datos import carpeta_sesion, guardar_participantes, participantes  # noqa: E402
+from lsm.calidad import MENSAJES_ENCUADRE, encuadre  # noqa: E402
+from lsm.datos import carpeta_sesion, guardar_participante, participantes  # noqa: E402
 from lsm.protocolo import Toma, cargar_protocolo, tomas as lista_tomas  # noqa: E402
 from lsm.rasgos import ReferenciaHombros, mano_activa  # noqa: E402
 
@@ -188,16 +189,8 @@ def dibujar_esqueleto(img, res) -> None:
 
 
 def revisar_encuadre(cuadro: dict) -> tuple[bool, str]:
-    if not P.hay_hombros(cuadro):
-        return False, "No se ven los hombros: colócate de frente a la cámara"
-    ancho = float(np.linalg.norm(cuadro["pose"][11, :2] - cuadro["pose"][12, :2]))
-    if ancho < 0.16:
-        return False, "Estás lejos: acércate un poco"
-    if ancho > 0.42:
-        return False, "Estás muy cerca: aléjate un poco"
-    if cuadro["pose"][0, 1] < 0.03:
-        return False, "Se corta la cabeza: baja la cámara o aléjate"
-    return True, "Encuadre correcto"
+    codigo = encuadre(cuadro)
+    return codigo == "ok", MENSAJES_ENCUADRE[codigo]
 
 
 # ====================================================================== sesión
@@ -242,7 +235,7 @@ class SesionCaptura:
     def _reiniciar_stats(self) -> None:
         self._ref = ReferenciaHombros()
         self._st = dict(analizados=0, mano=0, hombros=0, activos=0, activo_al_inicio=False,
-                        t_primera_activa=None, t_ultima_activa=None)
+                        t_primera_activa=None, t_ultima_activa=None, tramo=0, tramo_ultima=0)
 
     # ---------------------------------------------------------- teclado
     def tecla(self, k: int) -> None:
@@ -306,7 +299,10 @@ class SesionCaptura:
         st["hombros"] += P.hay_hombros(self._cuadro)
         if activa and self.estado == "cuenta":
             st["activo_al_inicio"] = True   # tenía la mano arriba antes del "¡YA!"
-        elif activa:
+        if self.estado == "grabando" and (activa or st["t_primera_activa"]):
+            st["tramo"] += 1
+        if activa and self.estado == "grabando":
+            st["tramo_ultima"] = st["tramo"]
             st["activos"] += 1
             st["t_primera_activa"] = st["t_primera_activa"] or t
             st["t_ultima_activa"] = t
@@ -337,7 +333,7 @@ class SesionCaptura:
         if toma.tipo != "negativo":
             if st["activos"] == 0:
                 avisos.append("No se vio la mano levantada: ¿se hizo la seña?")
-            elif st["mano"] / n < 0.4:
+            elif st["activos"] / max(st["tramo_ultima"], 1) < 0.5:   # dentro del tramo en que firmó
                 avisos.append("La mano se detectó poco (luz, fondo o mano fuera de cuadro)")
             if st["activo_al_inicio"]:
                 avisos.append("Empezó con la mano arriba: hay que iniciar con las manos abajo")
@@ -479,8 +475,7 @@ def registrar_persona(persona: str) -> dict:
         region=preguntar("Ciudad/región donde aprendió LSM (p. ej. Ensenada): "),
         consentimiento=True, fecha_registro=datetime.now().isoformat(timespec="seconds"),
         notas=preguntar("Notas (opcional, Enter para omitir): "))
-    datos[persona] = info
-    guardar_participantes(datos)
+    guardar_participante(persona, info)
     return info
 
 

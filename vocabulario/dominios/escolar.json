@@ -1,7 +1,7 @@
 {
   "dominio": "escolar",
   "nombre": "Servicios Escolares",
-  "descripcion": "Paquete de la ventanilla de Servicios Escolares UABC. 'tramite': true = se muestra como trámite en el panel del empleado.",
+  "descripcion": "Paquete de la ventanilla de Servicios Escolares UABC. 'tramite': true = se muestra como trámite en el panel del empleado. 'pista' (opcional) aclara qué significa la palabra durante la grabación.",
   "senas": [
     {
       "id": "inscripcion",
@@ -16,12 +16,14 @@
     {
       "id": "kardex",
       "texto": "Kárdex",
-      "tramite": true
+      "tramite": true,
+      "pista": "Historial de calificaciones"
     },
     {
       "id": "constancia",
       "texto": "Constancia",
-      "tramite": true
+      "tramite": true,
+      "pista": "Constancia de estudios"
     },
     {
       "id": "credencial",
@@ -30,7 +32,8 @@
     },
     {
       "id": "foto",
-      "texto": "Foto"
+      "texto": "Foto",
+      "pista": "Fotografía (para credencial o trámite)"
     },
     {
       "id": "beca",
@@ -40,46 +43,56 @@
     {
       "id": "baja",
       "texto": "Baja",
-      "tramite": true
+      "tramite": true,
+      "pista": "Dar de baja una materia o la carrera"
     },
     {
       "id": "certificado",
       "texto": "Certificado",
-      "tramite": true
+      "tramite": true,
+      "pista": "Certificado de estudios"
     },
     {
       "id": "titulo",
       "texto": "Título",
-      "tramite": true
+      "tramite": true,
+      "pista": "Título profesional (al terminar la carrera)"
     },
     {
       "id": "servicio_social",
       "texto": "Servicio social",
-      "tramite": true
+      "tramite": true,
+      "pista": "Servicio social"
     },
     {
       "id": "horario",
-      "texto": "Horario"
+      "texto": "Horario",
+      "pista": "Horario de clases"
     },
     {
       "id": "materia",
-      "texto": "Materia"
+      "texto": "Materia",
+      "pista": "Materia o asignatura de clase"
     },
     {
       "id": "calificacion",
-      "texto": "Calificación"
+      "texto": "Calificación",
+      "pista": "Calificación de una materia"
     },
     {
       "id": "semestre",
-      "texto": "Semestre"
+      "texto": "Semestre",
+      "pista": "Semestre"
     },
     {
       "id": "carrera",
-      "texto": "Carrera"
+      "texto": "Carrera",
+      "pista": "La carrera que estudias"
     },
     {
       "id": "facultad",
-      "texto": "Facultad"
+      "texto": "Facultad",
+      "pista": "Facultad o escuela"
     },
     {
       "id": "maestro",
@@ -91,27 +104,33 @@
     },
     {
       "id": "examen",
-      "texto": "Examen"
+      "texto": "Examen",
+      "pista": "Examen"
     },
     {
       "id": "solicitar",
-      "texto": "Solicitar"
+      "texto": "Solicitar",
+      "pista": "Pedir un trámite o documento"
     },
     {
       "id": "recoger",
-      "texto": "Recoger"
+      "texto": "Recoger",
+      "pista": "Recoger un documento"
     },
     {
       "id": "entregar",
-      "texto": "Entregar"
+      "texto": "Entregar",
+      "pista": "Entregar un documento"
     },
     {
       "id": "firma",
-      "texto": "Firma"
+      "texto": "Firma",
+      "pista": "Firmar un documento"
     },
     {
       "id": "matricula",
-      "texto": "Matrícula"
+      "texto": "Matrícula",
+      "pista": "Tu número de matrícula"
     }
   ],
   "lexico": [

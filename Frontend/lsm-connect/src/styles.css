@@ -548,3 +548,69 @@ body {
 .guia li + li {
     margin-top: 2px;
 }
+
+/* MODOS DE COMUNICACIÓN (señas / deletreo / números / teclado) */
+.modos {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin: 0 0 12px;
+}
+
+.modos .btn {
+    padding-left: 4px;
+    padding-right: 4px;
+    text-align: center;
+}
+
+/* Letras que se van leyendo durante el deletreo */
+.parcial {
+    font-family: var(--fuente-mono);
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    text-align: center;
+    background-color: var(--camara);
+    color: var(--oro-400);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 10px 0 0;
+    min-height: 1.5em;
+    overflow-wrap: anywhere;
+}
+
+.traduccion__parcial {
+    color: var(--oro-600);
+    font-family: var(--fuente-mono);
+    letter-spacing: 0.15em;
+}
+
+.aviso {
+    margin: 10px 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 2px solid var(--peligro);
+    color: var(--peligro);
+    font-weight: 700;
+}
+
+/* Respuesta del empleado en LSM (video grabado por una persona sorda) */
+.respuesta-alumno {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.respuesta-video {
+    width: 100%;
+    max-height: 260px;
+    border-radius: 6px;
+    background-color: var(--camara);
+    object-fit: contain;
+}
+
+@media (max-width: 480px) {
+    .modos {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

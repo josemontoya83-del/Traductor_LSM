@@ -1,11 +1,15 @@
-import React, { useEffect, useState } from "react";
-import { API } from "./config.js";
+import React, { useEffect, useMemo, useState } from "react";
+import { API, DOMINIOS, VENTANILLA } from "./config.js";
 import { useCamara } from "./hooks/useCamara.js";
-import { bonita, PALABRAS, TRAMITES_CLAVE } from "./palabras.js";
 
-const RAPIDAS = ["Pase a caja", "Necesita su credencial", "Regrese mañana", "Llene este formato"];
 const MAX_FICHAS = 5;   // fichas visibles en el panel del alumno
 const MAX_TEXTO = 12;   // palabras visibles en el panel del empleado
+const MODOS = [
+    { id: "senas", nombre: "Señas", ayuda: "Haz una seña y baja las manos al terminar." },
+    { id: "deletreo", nombre: "Deletreo", ayuda: "Deletrea letra por letra (nombres, carreras...). Baja la mano al terminar la palabra." },
+    { id: "numeros", nombre: "Números", ayuda: "Deletrea los dígitos (matrícula, teléfono). Baja la mano al terminar." },
+    { id: "teclado", nombre: "Teclado", ayuda: "Toca las palabras o escribe tu mensaje." },
+];
 const ERRORES = {
     permiso: "Necesitamos permiso para usar la cámara. Actívalo en el candado de la barra de direcciones.",
     camara: "No se encontró una cámara. Conéctala y pulsa Reintentar.",
@@ -13,35 +17,43 @@ const ERRORES = {
 };
 
 export default function App() {
-    const [modo, setModo] = useState("senas");   // "senas" (cámara) | "palabras" (el alumno toca las palabras)
+    const [modo, setModo] = useState("senas");
+    const [vocab, setVocab] = useState({ senas: [], respuestas: [], dominios_disponibles: [], dominios_activos: [] });
     const [tramite, setTramite] = useState("Por definir");
     const [frase, setFrase] = useState([]);      // palabras reconocidas en esta atención
     const [ultimo, setUltimo] = useState(null);  // { palabra, confianza, top3 }
-    const [duda, setDuda] = useState(null);      // top3 cuando el modelo no está seguro
+    const [duda, setDuda] = useState(null);      // top3 cuando el sistema no está seguro
     const [total, setTotal] = useState(0);
-    const [respuesta, setRespuesta] = useState("");
+    const [respuesta, setRespuesta] = useState(null); // { texto, id? }
     const [texto, setTexto] = useState("");
-    const [escrito, setEscrito] = useState("");   // lo que el alumno escribe con el teclado
+    const [escrito, setEscrito] = useState("");
     const [vista, setVista] = useState(false);
-    const [palabras, setPalabras] = useState(PALABRAS); // se reemplaza por la lista del modelo
+    const [sinVideo, setSinVideo] = useState(false);
 
-    // La lista real de palabras la da el servidor (sale del modelo entrenado).
-    // Si el servidor no responde, se queda la lista de respaldo de palabras.js.
+    // Vocabulario de esta ventanilla: general + dominios de la URL (?dominio=escolar)
     useEffect(() => {
-        fetch(`${API}/clases`)
+        fetch(`${API}/vocabulario?dominios=${DOMINIOS.join(",")}`)
             .then((r) => r.json())
-            .then((d) => Array.isArray(d.clases) && d.clases.length && setPalabras(d.clases))
+            .then(setVocab)
             .catch(() => {});
     }, []);
 
+    const tramites = useMemo(() => new Set(vocab.senas.filter((s) => s.tramite).map((s) => s.texto)), [vocab]);
+    const nombreDominio = vocab.dominios_disponibles
+        .filter((d) => d.id !== "general" && vocab.dominios_activos.includes(d.id))
+        .map((d) => d.nombre).join(" · ") || "Ventanilla";
+
     function agregar(palabra) {
-        if (TRAMITES_CLAVE.includes(palabra)) setTramite(bonita(palabra));
-        setFrase((f) => [...f, bonita(palabra)]);
+        if (tramites.has(palabra)) setTramite(palabra);
+        setFrase((f) => [...f, palabra]);
         setTotal((n) => n + 1);
     }
 
-    const { videoRef, estado, error, latenciaMs, reintentar } = useCamara({
-        activa: modo === "senas",
+    const camaraActiva = modo !== "teclado";
+    const { videoRef, estado, parcial, aviso, error, latenciaMs, reintentar } = useCamara({
+        activa: camaraActiva,
+        modo: camaraActiva ? modo : "senas",
+        dominios: DOMINIOS,
         onPalabra: (r) => {
             setDuda(null);
             agregar(r.palabra);
@@ -61,9 +73,7 @@ export default function App() {
     function enviarEscrito() {
         const limpio = escrito.trim();
         if (!limpio) return;
-        setFrase((f) => [...f, limpio]);
-        setTotal((n) => n + 1);
-        setUltimo({ palabra: limpio, confianza: 1, top3: [] });
+        tocarPalabra(limpio);
         setEscrito("");
     }
 
@@ -82,19 +92,23 @@ export default function App() {
         setDuda(null);
     }
 
-    function responder(mensaje) {
+    function responder(mensaje, id = null) {
         const limpio = mensaje.trim();
         if (!limpio) return;
-        setRespuesta(limpio);
+        setRespuesta({ texto: limpio, id });
+        setSinVideo(false);
         setTexto("");
     }
 
     function nuevaAtencion() {
-        setFrase([]); setTramite("Por definir"); setUltimo(null); setDuda(null); setTotal(0); setRespuesta(""); setTexto(""); setEscrito("");
+        setFrase([]); setTramite("Por definir"); setUltimo(null); setDuda(null); setTotal(0);
+        setRespuesta(null); setTexto(""); setEscrito("");
     }
 
     const filas = duda ?? (ultimo?.top3?.length ? ultimo.top3 : ultimo?.palabra ? [{ palabra: ultimo.palabra, prob: ultimo.confianza }] : []);
     const pct = (p) => Math.round((p ?? 0) * 100);
+    const ayuda = MODOS.find((m) => m.id === modo)?.ayuda;
+    const deletreando = modo === "deletreo" || modo === "numeros";
 
     return (
         <div className="app-container">
@@ -109,30 +123,39 @@ export default function App() {
                         </h1>
                     </div>
                     <div className="topbar__info">
-                        <span className="ventanilla-tag">Servicios Escolares · Ventanilla 2</span>
+                        <span className="ventanilla-tag">{nombreDominio} · Ventanilla {VENTANILLA}</span>
                     </div>
                 </div>
                 <div className="topbar__franja-dorada"></div>
             </header>
 
             <main className="layout-grid">
-                {/* PANEL 1: PALABRAS DISPONIBLES */}
+                {/* PANEL 1: VOCABULARIO */}
                 <section className="panel panel--tramites">
-                    <h2 className="panel__titulo">Palabras disponibles</h2>
-                    <p style={{ margin: "0 0 10px" }}>
-                        {modo === "senas" ? "Estas son las señas que el sistema reconoce." : "Toca las palabras o escribe tu mensaje."}
-                    </p>
-                    <ul className="tramites">
-                        {palabras.map((p) => (
-                            <li key={p}>
-                                {modo === "palabras" ? (
-                                    <button className="btn tramite" onClick={() => tocarPalabra(p)}>{bonita(p)}</button>
-                                ) : (
-                                    <span className="btn tramite" aria-pressed={ultimo?.palabra === p}>{bonita(p)}</span>
-                                )}
-                            </li>
-                        ))}
-                    </ul>
+                    <h2 className="panel__titulo">{deletreando ? "Deletreo" : "Señas disponibles"}</h2>
+                    {deletreando ? (
+                        <p style={{ margin: "0 0 10px" }}>
+                            Con el deletreo puedes escribir <strong>cualquier palabra</strong>: nombres, carreras,
+                            calles... Si se parece a una palabra conocida, el sistema te la sugiere.
+                        </p>
+                    ) : (
+                        <>
+                            <p style={{ margin: "0 0 10px" }}>
+                                {modo === "senas" ? "Estas son las señas que el sistema reconoce." : "Toca las palabras o escribe tu mensaje."}
+                            </p>
+                            <ul className="tramites">
+                                {vocab.senas.map((s) => (
+                                    <li key={s.id}>
+                                        {modo === "teclado" ? (
+                                            <button className="btn tramite" onClick={() => tocarPalabra(s.texto)}>{s.texto}</button>
+                                        ) : (
+                                            <span className="btn tramite" aria-pressed={ultimo?.palabra === s.texto}>{s.texto}</span>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        </>
+                    )}
                 </section>
 
                 {/* PANEL 2: ALUMNO */}
@@ -140,12 +163,15 @@ export default function App() {
                     <span className="panel__etiqueta">Alumno</span>
                     <h2 className="panel__titulo">Traductor LSM</h2>
 
-                    <div style={{ display: "flex", gap: 8, margin: "0 0 12px" }} role="group" aria-label="Forma de comunicarse">
-                        <button className="btn tramite" style={{ flex: 1 }} aria-pressed={modo === "senas"} onClick={() => cambiarModo("senas")}>Con señas</button>
-                        <button className="btn tramite" style={{ flex: 1 }} aria-pressed={modo === "palabras"} onClick={() => cambiarModo("palabras")}>Con palabras</button>
+                    <div className="modos" role="group" aria-label="Forma de comunicarse">
+                        {MODOS.map((m) => (
+                            <button key={m.id} className="btn tramite" aria-pressed={modo === m.id} onClick={() => cambiarModo(m.id)}>
+                                {m.nombre}
+                            </button>
+                        ))}
                     </div>
 
-                    {modo === "senas" && (<>
+                    {camaraActiva && (<>
                         <div className="camara">
                             <video
                                 ref={videoRef}
@@ -154,17 +180,20 @@ export default function App() {
                                 aria-label="Vista de la cámara"
                                 style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transform: "scaleX(-1)" }}
                             />
-                            {estado === "firmando" && <div className="buffer" style={{ zIndex: 1 }}></div>}
+                            {estado !== "reposo" && <div className="buffer" style={{ zIndex: 1 }}></div>}
                             <span className="camara__aviso" style={{ position: "relative", zIndex: 1 }}>Procesado en memoria. Sin video guardado.</span>
                         </div>
 
-                        {/* Cómo firmar: lo que el sistema necesita para reconocer bien la seña */}
-                        <details className="guia" open>
-                            <summary>Cómo hacer las señas</summary>
+                        {deletreando && (
+                            <div className="parcial" aria-live="polite">{parcial || " "}</div>
+                        )}
+
+                        <details className="guia">
+                            <summary>Cómo usarlo</summary>
                             <ol>
                                 <li>Colócate de modo que se vean <strong>tu cabeza, hombros y pecho</strong>.</li>
-                                <li>Haz las señas con la <strong>mano derecha</strong>.</li>
-                                <li>Al terminar cada seña, <strong>baja las manos</strong> y espera un segundo.</li>
+                                <li>Puedes usar la mano derecha o la izquierda.</li>
+                                <li>Empieza con las manos abajo y, al terminar, <strong>baja las manos</strong> y espera un segundo.</li>
                             </ol>
                         </details>
 
@@ -173,9 +202,11 @@ export default function App() {
                                 <p>{ERRORES[error]}</p>
                                 <button className="btn btn--chip" onClick={reintentar}>Reintentar</button>
                             </div>
+                        ) : aviso ? (
+                            <p role="alert" className="aviso">{aviso}</p>
                         ) : (
                             <p role="status" style={{ margin: "10px 0", fontWeight: 600 }}>
-                                {estado === "firmando" ? "Reconociendo…" : "Listo: haz una seña y baja las manos al terminar"}
+                                {estado === "reposo" ? ayuda : deletreando ? "Leyendo letras…" : "Reconociendo…"}
                             </p>
                         )}
 
@@ -183,22 +214,21 @@ export default function App() {
                             <input type="checkbox" checked={vista} onChange={(e) => setVista(e.target.checked)} />
                             <span className="switch__pista">Vista del sistema</span>
                         </label>
-
                     </>)}
 
-                    {modo === "palabras" && (
+                    {modo === "teclado" && (
                         <form className="campo" style={{ margin: "0 0 10px" }} onSubmit={(e) => { e.preventDefault(); enviarEscrito(); }}>
                             <input type="text" value={escrito} onChange={(e) => setEscrito(e.target.value)} placeholder="Escribe tu mensaje aquí..." aria-label="Mensaje del alumno" maxLength={200} />
                             <button type="submit" className="btn btn--primario" disabled={!escrito.trim()}>Enviar</button>
                         </form>
                     )}
 
-                    {modo === "palabras" && frase.length > 0 && (
+                    {frase.length > 0 && (
                         <button className="btn btn--chip" onClick={borrarUltima} style={{ margin: "0 0 10px" }}>Borrar lo último</button>
                     )}
 
-                    {duda && modo === "senas" && <p style={{ fontWeight: 700, margin: "10px 0 4px" }}>¿Qué quisiste decir? Toca una opción:</p>}
-                    {modo === "senas" && (vista || duda) && filas.length > 0 && (
+                    {duda && camaraActiva && <p style={{ fontWeight: 700, margin: "10px 0 4px" }}>¿Qué quisiste decir? Toca una opción:</p>}
+                    {camaraActiva && (vista || duda) && filas.length > 0 && (
                         <div className="top3">
                             {filas.map((c) => (
                                 <div
@@ -210,7 +240,7 @@ export default function App() {
                                         onKeyDown: (e) => (e.key === "Enter" || e.key === " ") && elegirDuda(c.palabra)
                                     } : {})}
                                 >
-                                    <span>{bonita(c.palabra)}</span>
+                                    <span>{c.palabra}</span>
                                     <div className="pred__barra"><span style={{ width: `${pct(c.prob)}%` }}></span></div>
                                     <span className="pred__pct">{pct(c.prob)}%</span>
                                 </div>
@@ -226,7 +256,24 @@ export default function App() {
                         ))}
                     </div>
 
-                    {respuesta && <div className="respuesta-alumno">{respuesta}</div>}
+                    {respuesta && (
+                        <div className="respuesta-alumno">
+                            {respuesta.id && !sinVideo && (
+                                <video
+                                    key={respuesta.id}
+                                    className="respuesta-video"
+                                    src={`/respuestas/${respuesta.id}.mp4`}
+                                    autoPlay
+                                    loop
+                                    muted
+                                    playsInline
+                                    onError={() => setSinVideo(true)}
+                                    aria-label={`Respuesta en LSM: ${respuesta.texto}`}
+                                />
+                            )}
+                            <span>{respuesta.texto}</span>
+                        </div>
+                    )}
                 </section>
 
                 {/* PANEL 3: EMPLEADO */}
@@ -239,11 +286,12 @@ export default function App() {
                         {frase.length
                             ? (frase.length > MAX_TEXTO ? "… " : "") + frase.slice(-MAX_TEXTO).join(" ")
                             : "Esperando las señas del alumno…"}
+                        {deletreando && parcial && <span className="traduccion__parcial"> {parcial}…</span>}
                     </p>
 
                     <div className="rapidas">
-                        {RAPIDAS.map((r) => (
-                            <button key={r} className="btn btn--chip" onClick={() => responder(r)}>{r}</button>
+                        {vocab.respuestas.map((r) => (
+                            <button key={r.id} className="btn btn--chip" onClick={() => responder(r.texto, r.id)}>{r.texto}</button>
                         ))}
                     </div>
 
@@ -264,7 +312,7 @@ export default function App() {
                             </div>
                             <div className="metrica">
                                 <span className="metrica__valor">{total}</span>
-                                <span className="metrica__nombre">Señas reconocidas</span>
+                                <span className="metrica__nombre">Palabras</span>
                             </div>
                         </div>
                     )}
@@ -274,13 +322,6 @@ export default function App() {
             </main>
 
             <footer className="pie">
-                <div className="pie__enlaces">
-                    <a href="#" className="pie__enlace">Correo</a>
-                    <a href="#" className="pie__enlace">Biblioteca</a>
-                    <a href="#" className="pie__enlace">Gaceta</a>
-                    <a href="#" className="pie__enlace">Radio</a>
-                    <a href="#" className="pie__enlace">Política de Privacidad</a>
-                </div>
                 <div className="pie__banda">
                     <img src="/logo-uabc.png" alt="" className="pie__escudo-mini" />
                 </div>

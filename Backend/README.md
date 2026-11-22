@@ -1,77 +1,57 @@
 # Backend LSM-Connect (FastAPI)
 
-Servidor local que corre en la misma máquina de la ventanilla (Edge). El video solo pasa por RAM y no se guarda.
+Servidor local que corre en la misma computadora de la ventanilla. El video solo pasa por memoria y nunca se guarda. La lógica de reconocimiento vive en el paquete `lsm/` (raíz del proyecto); aquí solo están las rutas.
 
 ## Arrancar
 
-Desde esta carpeta (`Backend/`), con el entorno `venv` activo:
+Desde la **raíz del proyecto**, con el `venv` activo:
 
 ```powershell
-pip install -r requirements-backend.txt          # una sola vez
-uvicorn app.main:app --port 8000                  # motor SIMULADO (para desarrollar el front)
-$env:LSM_MOTOR="real"; uvicorn app.main:app --port 8000   # motor REAL (requiere Modelo_ia/lsm_tramites.h5)
+python -m uvicorn app.main:app --app-dir Backend --port 8000                       # motor SIMULADO
+$env:LSM_MOTOR="real"; python -m uvicorn app.main:app --app-dir Backend --port 8000   # modelos de modelos/
 ```
 
-Comprobar: abrir http://localhost:8000/salud → `{"ok":true,"motor":"simulado"}`. Documentación interactiva: http://localhost:8000/docs
-
-El motor simulado devuelve palabras falsas en un ciclo fijo; el front se desarrolla contra él y después se cambia a `real` sin tocar nada.
+Para comprobar que responde: http://localhost:8000/salud. La documentación interactiva está en http://localhost:8000/docs.
 
 ## Contrato
 
-### `WS /ws/camara` (señas → texto)
+### `WS /ws/camara`
 
-- **Front → backend:** cada mensaje binario es **un frame JPEG** (sin espejo, tal como lo da la cámara; ~640×480, calidad 0.7).
-- **Backend → front:** por cada frame, un JSON:
+**Interfaz → servidor**
+
+- **Binario:** una imagen JPEG por mensaje, sin espejo, de ~640×480 y calidad 0.7. **Se manda la siguiente cuando llega la respuesta de la anterior.**
+- **Texto `config`:** `{"tipo": "config", "modo": "senas" | "deletreo" | "numeros", "dominios": ["escolar"]}`. Se manda al conectar y cada vez que cambia el modo; **no hace falta reconectar**. Las señas de `general` siempre están activas.
+- **Texto `reiniciar`:** `{"tipo": "reiniciar"}` limpia el estado (al empezar una atención nueva).
+
+**Servidor → interfaz:** un JSON por imagen:
 
 ```json
-{ "id": 3, "estado": "palabra", "palabra": "kardex", "confianza": 0.93,
-  "top3": [ {"palabra":"kardex","prob":0.93}, {"palabra":"constancia","prob":0.04}, {"palabra":"foto","prob":0.02} ] }
+{ "id": 3, "estado": "palabra", "palabra": "Kárdex", "confianza": 0.93,
+  "top3": [{"palabra": "Kárdex", "prob": 0.93}, {"palabra": "Constancia", "prob": 0.04}, {"palabra": "Foto", "prob": 0.02}],
+  "parcial": "", "aviso": null }
 ```
 
-| `estado` | Significado | Qué hace el front |
+| `estado` | Significado | Qué hace la interfaz |
 |---|---|---|
-| `reposo` | Nadie está firmando | No mostrar nada nuevo |
-| `firmando` | Detectó una seña en curso | Indicador "reconociendo…" |
-| `palabra` | Seña reconocida con confianza | Agregar `palabra` al texto/chat (una vez por `id`) |
-| `duda` | No está seguro | Mostrar `top3` como botones para que la persona toque la correcta (una vez por `id`) |
+| `reposo` | Nadie está firmando | Nada |
+| `firmando` | Hay una seña en curso | Indicador "reconociendo…" |
+| `letra` | Deletreo en curso; `parcial` trae las letras leídas ("KAR") | Mostrar `parcial` |
+| `palabra` | Palabra reconocida; `palabra` ya viene lista para mostrar | Agregarla (una vez por `id`) |
+| `duda` | No está seguro | Mostrar `top3` como botones (una vez por `id`) |
 
-- `id` sube en 1 con cada `palabra` o `duda`. En los demás estados repite el último. **Procesar cada evento una sola vez por `id`.**
-- **Mandar el siguiente frame cuando llegue la respuesta del anterior** (evita saturar al backend). Con eso se logran unos 10–15 fps, suficiente.
-- Texto `{"tipo":"reiniciar"}` limpia el estado interno (usar al iniciar una atención nueva).
+- `id` sube en 1 con cada `palabra` o `duda`. **Cada `id` se procesa una sola vez.**
+- `aviso` trae un mensaje para la persona cuando algo impide reconocer (por ejemplo, no hay modelo de letras y se eligió deletreo).
+- En deletreo, si lo deletreado coincide con el vocabulario se devuelve la palabra bien escrita ("KARDEX" → "Kárdex"). Si se parece, llega `duda` con las opciones más lo deletreado tal cual. Si no se parece a nada (un nombre), se respeta lo deletreado.
 
-```js
-const ws = new WebSocket("ws://localhost:8000/ws/camara");
-ws.onopen = enviarSiguiente;
-ws.onmessage = (e) => { const r = JSON.parse(e.data); manejar(r); enviarSiguiente(); };
-async function enviarSiguiente() {
-  canvas.getContext("2d").drawImage(video, 0, 0, 640, 480);
-  canvas.toBlob((b) => b.arrayBuffer().then((buf) => ws.send(buf)), "image/jpeg", 0.7);
-}
-```
-
-### `WS /ws/chat?rol=estudiante|ventanilla&sala=principal`
-
-- **Front → backend:** `{"texto": "Hola"}` (máx. 500 caracteres).
-- **Backend → front:** al conectar llega `{"tipo":"historial","mensajes":[...]}`; después cada mensaje de la sala:
-
-```json
-{ "tipo": "mensaje", "rol": "estudiante", "texto": "Hola", "hora": "2026-11-04T19:40:00+00:00" }
-```
-
-- Un mensaje se difunde a **todos** los conectados a esa `sala` (incluido el que lo envió).
-- La conversación vive solo en RAM. Al cambiar de modo cámara ↔ chat no se pierde (al reconectar llega el historial).
-- Las palabras reconocidas por la cámara (`palabra`, o la elegida en `duda`) se envían como mensajes de chat con `rol: "estudiante"`, así el empleado las ve igual que si fueran escritas.
-
-### Otros
+### HTTP
 
 | Ruta | Qué hace |
 |---|---|
-| `GET /salud` | Estado del servidor y motor en uso |
-| `GET /clases` | Lista de palabras que reconoce |
-| `POST /chat/{sala}/cerrar` | Fin de la atención: borra la conversación de la RAM y manda `{"tipo":"cerrada"}` a los clientes |
+| `GET /salud` | Estado, motor en uso y qué modelos existen |
+| `GET /vocabulario?dominios=escolar` | Señas activas (`general` + dominios, con `texto` y `tramite`) y respuestas rápidas |
 
 ## Estructura
 
-- `app/contrato.py` — formato de los mensajes.
-- `app/motores.py` — `MotorSimulado` y `MotorReal` (MediaPipe + modelo + segmentación).
-- `app/main.py` — rutas y WebSockets.
+- `app/main.py`: rutas y WebSocket. Los modelos se cargan una sola vez y se comparten entre conexiones.
+- `app/contrato.py`: formato de los mensajes.
+- Motor real y simulado: `lsm/motor.py`.

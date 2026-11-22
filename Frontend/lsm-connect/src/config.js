@@ -2,10 +2,12 @@
 export const API = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 export const WS = API.replace(/^http/, "ws");
 
-// Parámetros de la URL: ?rol=ventanilla (pantalla del empleado) y ?sala=otra
+// Parámetros de la URL:
+//   ?dominio=escolar      paquete de vocabulario de esta ventanilla (varios: escolar,caja)
+//   ?ventanilla=2         número que se muestra en el encabezado
 const params = new URLSearchParams(window.location.search);
-export const ROL_URL = params.get("rol") === "ventanilla" ? "ventanilla" : "estudiante";
-export const SALA = params.get("sala") ?? "principal";
+export const DOMINIOS = (params.get("dominio") ?? "escolar").split(",").filter(Boolean);
+export const VENTANILLA = params.get("ventanilla") ?? "1";
 
 // Cámara: tamaño y calidad del frame que se manda al backend
 export const FRAME_ANCHO = 640;

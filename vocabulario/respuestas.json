@@ -1,0 +1,65 @@
+{
+  "descripcion": "Respuestas rápidas del empleado. Si existe Frontend/lsm-connect/public/respuestas/<id>.mp4 (grabado por una persona sorda, bloque G del protocolo), el alumno ve el video en LSM además del texto.",
+  "respuestas": [
+    {
+      "id": "hola_ayudo",
+      "texto": "Hola, ¿en qué le puedo ayudar?",
+      "dominio": "general"
+    },
+    {
+      "id": "pase_caja",
+      "texto": "Pase a caja",
+      "dominio": "escolar"
+    },
+    {
+      "id": "falta_documento",
+      "texto": "Le falta un documento",
+      "dominio": "escolar"
+    },
+    {
+      "id": "regrese_manana",
+      "texto": "Regrese mañana",
+      "dominio": "general"
+    },
+    {
+      "id": "espere_turno",
+      "texto": "Espere su turno, por favor",
+      "dominio": "general"
+    },
+    {
+      "id": "llene_formato",
+      "texto": "Llene este formato",
+      "dominio": "escolar"
+    },
+    {
+      "id": "tramite_listo",
+      "texto": "Su trámite está listo",
+      "dominio": "escolar"
+    },
+    {
+      "id": "tarda_dias",
+      "texto": "Tarda 3 días hábiles",
+      "dominio": "escolar"
+    },
+    {
+      "id": "necesita_credencial",
+      "texto": "Necesita su credencial",
+      "dominio": "escolar"
+    },
+    {
+      "id": "tome_foto",
+      "texto": "Necesitamos tomarle una foto",
+      "dominio": "escolar"
+    },
+    {
+      "id": "aviso_correo",
+      "texto": "Le avisaremos por correo",
+      "dominio": "general"
+    },
+    {
+      "id": "algo_mas",
+      "texto": "¿Algo más en que le pueda ayudar?",
+      "dominio": "general"
+    }
+  ]
+}

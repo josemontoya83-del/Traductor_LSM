@@ -1,0 +1,157 @@
+{
+  "dominio": "escolar",
+  "nombre": "Servicios Escolares",
+  "descripcion": "Paquete de la ventanilla de Servicios Escolares UABC. 'tramite': true = se muestra como trámite en el panel del empleado.",
+  "senas": [
+    {
+      "id": "inscripcion",
+      "texto": "Inscripción",
+      "tramite": true
+    },
+    {
+      "id": "reinscripcion",
+      "texto": "Reinscripción",
+      "tramite": true
+    },
+    {
+      "id": "kardex",
+      "texto": "Kárdex",
+      "tramite": true
+    },
+    {
+      "id": "constancia",
+      "texto": "Constancia",
+      "tramite": true
+    },
+    {
+      "id": "credencial",
+      "texto": "Credencial",
+      "tramite": true
+    },
+    {
+      "id": "foto",
+      "texto": "Foto"
+    },
+    {
+      "id": "beca",
+      "texto": "Beca",
+      "tramite": true
+    },
+    {
+      "id": "baja",
+      "texto": "Baja",
+      "tramite": true
+    },
+    {
+      "id": "certificado",
+      "texto": "Certificado",
+      "tramite": true
+    },
+    {
+      "id": "titulo",
+      "texto": "Título",
+      "tramite": true
+    },
+    {
+      "id": "servicio_social",
+      "texto": "Servicio social",
+      "tramite": true
+    },
+    {
+      "id": "horario",
+      "texto": "Horario"
+    },
+    {
+      "id": "materia",
+      "texto": "Materia"
+    },
+    {
+      "id": "calificacion",
+      "texto": "Calificación"
+    },
+    {
+      "id": "semestre",
+      "texto": "Semestre"
+    },
+    {
+      "id": "carrera",
+      "texto": "Carrera"
+    },
+    {
+      "id": "facultad",
+      "texto": "Facultad"
+    },
+    {
+      "id": "maestro",
+      "texto": "Maestro"
+    },
+    {
+      "id": "alumno",
+      "texto": "Alumno"
+    },
+    {
+      "id": "examen",
+      "texto": "Examen"
+    },
+    {
+      "id": "solicitar",
+      "texto": "Solicitar"
+    },
+    {
+      "id": "recoger",
+      "texto": "Recoger"
+    },
+    {
+      "id": "entregar",
+      "texto": "Entregar"
+    },
+    {
+      "id": "firma",
+      "texto": "Firma"
+    },
+    {
+      "id": "matricula",
+      "texto": "Matrícula"
+    }
+  ],
+  "lexico": [
+    "UABC",
+    "Ensenada",
+    "Mexicali",
+    "Tijuana",
+    "Tecate",
+    "Ingeniería",
+    "Medicina",
+    "Derecho",
+    "Contabilidad",
+    "Administración",
+    "Psicología",
+    "Arquitectura",
+    "Enfermería",
+    "Informática",
+    "Computación",
+    "Electrónica",
+    "Industrial",
+    "Civil",
+    "Biología",
+    "Oceanología",
+    "Ciencias",
+    "Idiomas",
+    "Artes",
+    "Deportes",
+    "Pago",
+    "Recibo",
+    "Caja",
+    "Cuota",
+    "Semestral",
+    "Historial",
+    "Acta",
+    "Nacimiento",
+    "CURP",
+    "Comprobante",
+    "Domicilio",
+    "Duplicado",
+    "Trámite",
+    "Ventanilla"
+  ]
+}

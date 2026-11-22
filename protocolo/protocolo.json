@@ -1,0 +1,184 @@
+{
+  "version": 1,
+  "descripcion": "Qué graba cada persona en cada sesión. Lo lee herramientas/captura.py. Si se cambia algo aquí, cambiar también protocolo/PROTOCOLO_GRABACION.md.",
+  "segundos_maximos": {
+    "letra": 4,
+    "numero": 4,
+    "sena": 6,
+    "deletreo": 15,
+    "negativo": 6,
+    "respuesta": 25
+  },
+  "parar_al_bajar_manos": {
+    "letra": true,
+    "numero": true,
+    "sena": true,
+    "deletreo": true,
+    "negativo": false,
+    "respuesta": false
+  },
+  "cuenta_regresiva_s": 1.5,
+  "instrucciones": {
+    "letra": "Sostén la letra",
+    "letra_movimiento": "Haz la letra 3 veces seguidas",
+    "numero": "Sostén el número",
+    "sena": "Haz la seña",
+    "deletreo": "Deletrea a tu ritmo normal",
+    "negativo": "Haz esto (NO es una seña)",
+    "respuesta": "Di en señas esta respuesta"
+  },
+  "deletreo": {
+    "1": [
+      "KARDEX",
+      "BECA",
+      "UABC",
+      "ENSENADA",
+      "QUIMICA",
+      "ZAPATO",
+      "NIÑO",
+      "LLAVE",
+      "PERRO",
+      "TAXI",
+      "1185520",
+      "2026"
+    ],
+    "2": [
+      "MARIA",
+      "GONZALEZ",
+      "HECTOR",
+      "WIFI",
+      "CHOCOLATE",
+      "JUGO",
+      "YOGUR",
+      "FLOR",
+      "VIDEO",
+      "EXAMEN",
+      "6461234567",
+      "38"
+    ]
+  },
+  "negativos": [
+    {
+      "id": "quieto",
+      "texto": "Manos quietas, mirando a la cámara"
+    },
+    {
+      "id": "rascarse",
+      "texto": "Rascarse la cara o la cabeza"
+    },
+    {
+      "id": "cabello",
+      "texto": "Acomodarse el cabello o los lentes"
+    },
+    {
+      "id": "celular",
+      "texto": "Sacar el celular y verlo"
+    },
+    {
+      "id": "brazos",
+      "texto": "Cruzar y descruzar los brazos"
+    },
+    {
+      "id": "ademanes",
+      "texto": "Mover las manos sin decir nada (ademanes)"
+    }
+  ],
+  "sesiones": {
+    "1": [
+      {
+        "bloque": "A",
+        "nombre": "Alfabeto",
+        "tipo": "letra",
+        "fuente": "letras",
+        "repeticiones": 2
+      },
+      {
+        "bloque": "B",
+        "nombre": "Números",
+        "tipo": "numero",
+        "fuente": "numeros",
+        "repeticiones": 2
+      },
+      {
+        "bloque": "C",
+        "nombre": "Señas generales",
+        "tipo": "sena",
+        "fuente": "dominio:general",
+        "repeticiones": 3
+      },
+      {
+        "bloque": "D",
+        "nombre": "Señas de Servicios Escolares",
+        "tipo": "sena",
+        "fuente": "dominio:escolar",
+        "repeticiones": 3
+      },
+      {
+        "bloque": "E",
+        "nombre": "Palabras deletreadas",
+        "tipo": "deletreo",
+        "fuente": "deletreo",
+        "repeticiones": 1
+      },
+      {
+        "bloque": "F",
+        "nombre": "Movimientos que no son seña",
+        "tipo": "negativo",
+        "fuente": "negativos",
+        "repeticiones": 1
+      }
+    ],
+    "2": [
+      {
+        "bloque": "A",
+        "nombre": "Alfabeto",
+        "tipo": "letra",
+        "fuente": "letras",
+        "repeticiones": 2
+      },
+      {
+        "bloque": "B",
+        "nombre": "Números",
+        "tipo": "numero",
+        "fuente": "numeros",
+        "repeticiones": 1
+      },
+      {
+        "bloque": "C",
+        "nombre": "Señas generales",
+        "tipo": "sena",
+        "fuente": "dominio:general",
+        "repeticiones": 3
+      },
+      {
+        "bloque": "D",
+        "nombre": "Señas de Servicios Escolares",
+        "tipo": "sena",
+        "fuente": "dominio:escolar",
+        "repeticiones": 3
+      },
+      {
+        "bloque": "E",
+        "nombre": "Palabras deletreadas",
+        "tipo": "deletreo",
+        "fuente": "deletreo",
+        "repeticiones": 1
+      },
+      {
+        "bloque": "F",
+        "nombre": "Movimientos que no son seña",
+        "tipo": "negativo",
+        "fuente": "negativos",
+        "repeticiones": 1
+      },
+      {
+        "bloque": "G",
+        "nombre": "Respuestas del empleado (opcional, 1-2 personas)",
+        "tipo": "respuesta",
+        "fuente": "respuestas",
+        "repeticiones": 1,
+        "opcional": true
+      }
+    ]
+  }
+}

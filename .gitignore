@@ -3,8 +3,17 @@ venv/
 .vs/
 __pycache__/
 *.pyc
+.pytest_cache/
 node_modules/
 .env
 
-# Segmentos capturados en modo diagnóstico (LSM_DEBUG=1)
-Pruebas/debug_segmentos/
+# Datos de las personas (videos y puntos): NUNCA a git. Respaldar en un almacenamiento
+# institucional con acceso restringido (ver protocolo/PROTOCOLO_GRABACION.md).
+datos/
+
+# Modelos entrenados: se regeneran con herramientas/entrenar_*.py
+modelos/*
+!modelos/LEEME.md
+
+# Videos de respuestas exportados (contienen a personas: se distribuyen aparte)
+Frontend/lsm-connect/public/respuestas/*.mp4

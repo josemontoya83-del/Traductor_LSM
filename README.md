@@ -1,153 +1,115 @@
-# LSM-Connect: Traductor de LSM a español
+# LSM-Connect
 
-Sistema que reconoce señas de la **Lengua de Señas Mexicana (LSM)** con una cámara y las muestra como **texto en español** en tiempo real. Está pensado para la ventanilla de Servicios Escolares: un estudiante sordo hace señas y el empleado las lee en su pantalla, y puede responder con texto o frases rápidas.
+Sistema que reconoce **Lengua de Señas Mexicana (LSM)** con una cámara y la muestra como texto en español, para ventanillas de atención. El alumno se comunica con **señas** o **deletreando**; el empleado lee el texto y responde con frases rápidas (en texto y, si existe, en **video en LSM**).
 
-Proyecto del Grupo 952, UABC Ensenada.
+Proyecto del Grupo 952, UABC Ensenada. Primer lugar de uso: **Servicios Escolares**.
 
-> **Estado:** prueba de concepto. Reconoce **14 palabras sueltas** de trámites escolares. Funciona bien con las personas que grabaron el dataset; con personas nuevas la precisión baja mucho (ver [Resultados](#resultados)).
+> **Estado:** listo para **grabar el dataset con personas sordas** (ver [`protocolo/PROTOCOLO_GRABACION.md`](protocolo/PROTOCOLO_GRABACION.md)). Todavía no hay modelos entrenados: se generan con esas grabaciones. Mientras tanto, la interfaz funciona en modo simulado.
 
 ---
+
+## Cómo se extiende más allá de Servicios Escolares
+
+El motor no está atado a Servicios Escolares. El vocabulario está en capas:
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│ DELETREO (alfabeto + números)               funciona en TODO │
+│   Cualquier palabra, nombre, carrera o matrícula, sin grabar │
+│   nada nuevo. Si lo deletreado se parece a una palabra       │
+│   conocida, se corrige ("KARDES" -> "Kárdex").               │
+├──────────────────────────────────────────────────────────────┤
+│ SEÑAS GENERALES (30)                   activas en TODO lugar │
+│   hola, gracias, sí, no, ayuda, no entiendo, ¿dónde?, pagar… │
+├──────────────────────────────────────────────────────────────┤
+│ PAQUETE DEL LUGAR (≈25 señas)            uno por ventanilla  │
+│   escolar: kárdex, inscripción, beca, constancia…            │
+│   (mañana) biblioteca, caja, clínica…                        │
+└──────────────────────────────────────────────────────────────┘
+```
+
+- **Señas** para lo frecuente: es lo natural y rápido para una persona sorda.
+- **Deletreo** para todo lo demás: es lo que permite usar el sistema en cualquier lugar desde el primer día.
+- **Llevarlo a otro lugar** = crear `vocabulario/dominios/<lugar>.json` con ~20–30 señas, grabarlas con el mismo protocolo y reentrenar. El deletreo y las señas generales ya funcionan ahí. Cada ventanilla elige su paquete en la URL: `http://localhost:5173/?dominio=biblioteca`.
 
 ## Cómo funciona
 
 ```
-Cámara (navegador) ──JPEG por WebSocket──► Servidor local (FastAPI)
-                                              │
-                                              ├─ MediaPipe Holistic: 226 puntos por imagen
-                                              │  (21 de cada mano x 3 + 25 del cuerpo x 4)
-                                              ├─ Segmentación: detecta dónde empieza y termina la seña
-                                              ├─ Ajuste a 30 cuadros + normalización por hombros
-                                              └─ Red GRU (TensorFlow) ──► palabra + 3 mejores opciones
-                                                          │
-Pantalla del alumno y del empleado ◄──────────────────────┘
+Cámara ─JPEG─► Servidor local (FastAPI) ── lsm/ (paquete compartido) ─────────────────────┐
+                 │  MediaPipe Holistic: manos, cuerpo y cara (lsm/puntos.py)              │
+                 │  Segmentador: ¿empezó / terminó la seña? (lsm/segmentador.py)          │
+                 ├─ modo SEÑAS:    seña completa ─► modelo de señas ─► palabra            │
+                 └─ modo DELETREO: ventana de 0.6 s ─► modelo de letras ─► "K A R D E X"  │
+                                   ─► vocabulario ─► "Kárdex"  (lsm/decodificador.py)     │
+Pantalla alumno + empleado ◄─────────────────────────────────────────────────────────────┘
 ```
 
-- Si el modelo tiene **menos de 70 % de confianza**, no adivina: muestra las 3 opciones más probables para que el alumno elija.
-- **Privacidad:** el video solo pasa por la memoria y **nunca se guarda**. Todo corre en la misma computadora; nada sale a internet.
+- La **captura, el entrenamiento y el servidor usan el mismo código** (`lsm/`) para extraer puntos, cortar las señas y calcular rasgos. Lo que el modelo ve al entrenar es exactamente lo que ve en vivo.
+- **Zurdos:** todo se pasa a "mano dominante = derecha" con un espejo, así una persona zurda se reconoce igual.
+- Si el sistema **no está seguro**, no adivina: muestra 3 opciones para que el alumno toque la correcta.
+- **Privacidad en la ventanilla:** el video solo pasa por memoria y nunca se guarda; todo corre en la misma computadora.
 
-## Tecnologías
+## Estructura
 
-| Parte | Tecnología |
-|---|---|
-| Interfaz | React 18 + Vite 5 |
-| Comunicación | WebSockets |
-| Servidor | Python 3.12 + FastAPI + Uvicorn |
-| Visión | MediaPipe Holistic 0.10 + OpenCV |
-| Modelo | TensorFlow 2.17 / tf_keras: red recurrente GRU (~61 mil parámetros) |
+```
+lsm/                    Paquete compartido: puntos, rasgos, segmentador, modelos, motor en vivo
+herramientas/           captura.py, extraer_puntos.py, revisar_datos.py, entrenar_letras.py,
+                        entrenar_senas.py, exportar_respuestas.py, detectar_camaras.py
+vocabulario/            letras.json, respuestas.json, dominios/general.json, dominios/escolar.json
+protocolo/              protocolo.json (qué se graba), PROTOCOLO_GRABACION.md, consentimiento, particion.json
+Backend/app/            Servidor FastAPI (main.py) y contrato de mensajes (contrato.py)
+Frontend/lsm-connect/   Interfaz React
+tests/                  Pruebas automáticas (con datos sintéticos, sin cámara)
+modelos/                Modelos entrenados (no se suben a git)
+datos/                  Videos y puntos grabados (NO se suben a git)
+entregas/               Documentación y prototipos de las entregas del curso
+grabar.bat              Menú de grabación para el operador
+iniciar_demo.bat        Arranca servidor + interfaz      detener_demo.bat   Apaga todo
+```
 
-## Requisitos
+## Instalación (una sola vez, Windows 10/11)
 
-- Windows 10 u 11 con cámara web.
-- [Python 3.12](https://www.python.org/downloads/).
-- [Node.js](https://nodejs.org/) 18 o superior.
-
-## Instalación (una sola vez)
-
-Desde la carpeta del proyecto, en PowerShell:
+Requisitos: [Python 3.12 de 64 bits](https://www.python.org/downloads/) y [Node.js](https://nodejs.org/) 18 o superior.
 
 ```powershell
 python -m venv venv
 venv\Scripts\activate
-pip install -r requirements.txt -r Backend\requirements-backend.txt
+pip install -r requirements.txt
+python -m pytest                # deben pasar todas las pruebas
 ```
-
-Las librerías de la interfaz (`npm install`) se instalan solas la primera vez que se ejecuta `iniciar_demo.bat`.
 
 ## Uso
 
-| Acción | Cómo |
+| Qué | Cómo |
 |---|---|
-| Iniciar el demo (modelo real) | Doble clic en `iniciar_demo.bat` |
-| Iniciar con predicciones simuladas (sin modelo) | `iniciar_demo.bat simulado` |
-| Iniciar en modo diagnóstico | `iniciar_demo.bat debug` (ver [Diagnóstico](#diagnóstico)) |
-| Apagar todo | Doble clic en `detener_demo.bat` |
+| **Grabar** (operador) | Doble clic en `grabar.bat` → 1 probar cámara · 2 grabar sesión · 3 ver avance |
+| Extraer puntos de lo grabado | `python herramientas\extraer_puntos.py` |
+| Ver avance y tomas a repetir | `python herramientas\revisar_datos.py --avisos` |
+| Entrenar | `python herramientas\entrenar_letras.py` y `python herramientas\entrenar_senas.py` |
+| Prueba final (personas nunca vistas) | los mismos con `--prueba` (ver `protocolo/particion.json`) |
+| Videos de respuestas para la interfaz | `python herramientas\exportar_respuestas.py --persona P03` |
+| **Demo** | Doble clic en `iniciar_demo.bat` (usa los modelos de `modelos/`; si no hay, simulado) |
+| Demo simulada | `iniciar_demo.bat simulado` |
+| Otra ventanilla | `iniciar_demo.bat real biblioteca` o `?dominio=biblioteca` en la URL |
 
-`iniciar_demo.bat` abre dos ventanas negras (**LSM Backend** y **LSM Frontend**), espera a que el servidor cargue el modelo (unos 25 s) y abre `http://localhost:5173` en el navegador. No cierres las ventanas negras mientras uses el demo.
-
-<details>
-<summary>Arrancar a mano, sin el .bat</summary>
+Arranque manual, sin `.bat`:
 
 ```powershell
-# Terminal 1: servidor
-cd Backend
-$env:LSM_MOTOR="real"; ..\venv\Scripts\python -m uvicorn app.main:app --port 8000
-
-# Terminal 2: interfaz
-cd Frontend\lsm-connect
-npm install
-npm run dev
+$env:LSM_MOTOR="real"; python -m uvicorn app.main:app --app-dir Backend --port 8000
+cd Frontend\lsm-connect; npm install; npm run dev
 ```
 
-La documentación de los mensajes entre la interfaz y el servidor está en [Backend/README.md](Backend/README.md).
-</details>
+Contrato entre interfaz y servidor: [`Backend/README.md`](Backend/README.md).
 
-### Cómo hacer las señas
+## Cómo se evalúa
 
-1. Colócate de modo que se vean tu **cabeza, hombros y pecho**.
-2. Haz las señas con la **mano derecha**.
-3. Al terminar cada seña, **baja las manos** y espera un segundo. Así el sistema sabe que la seña terminó.
+- **Siempre dejando personas fuera:** la persona de prueba nunca se vio al entrenar (validación cruzada por persona).
+- La validación para detener el entrenamiento se separa **antes** del aumento de datos y por persona.
+- 2 personas quedan apartadas para la **prueba final** (`protocolo/particion.json`); con ellas nunca se entrena.
+- El deletreo se mide reproduciendo palabras reales (bloque E) por el mismo motor del servidor: error por letra y palabras correctas.
 
-### Palabras que reconoce
+## Limitaciones conocidas
 
-Inscripción, Reinscripción, Kárdex, Constancia, Foto, Credencial, Documentos, Solicitar, Recoger, Entrega, Sí, No, Tengo una duda y Gracias.
-
-La lista sale del modelo entrenado (`Modelo_ia/clases_tramites.json`): si se reentrena con otras palabras, la interfaz se actualiza sola.
-
-## Resultados
-
-Dataset propio: **383 grabaciones de 2 personas**, 14 palabras más una clase de "reposo" (12 a 16 repeticiones por palabra y persona).
-
-| Prueba | Resultado |
-|---|---|
-| Mismas personas, repeticiones no usadas al entrenar (171 muestras) | **81.3 %** a la primera; **88.9 %** con la correcta entre las 3 opciones |
-| Frases de 3 a 5 señas (mismas personas) | 18.7 % de error por palabra (distancia de Levenshtein) |
-| Persona que el modelo no vio (entrenando con la otra) | **6.7 %** y **21.7 %** |
-
-La última fila es el peor caso, porque cada prueba entrena con una sola persona, pero muestra el límite principal: **el modelo no generaliza a personas nuevas**. Para eso hace falta grabar a muchas más personas.
-
-Para reproducir las métricas: `python Modelo_ia/demo_examen.py evaluar` (genera `resultados_demo.json` y `matriz_confusion.png`).
-
-## Grabar señas y entrenar
-
-Todo se ejecuta desde la carpeta del proyecto, con el entorno activo (`venv\Scripts\activate`):
-
-```powershell
-# 1. Grabar: pide la seña y tu nombre; usa sola la cámara disponible.
-#    ESPACIO = empezar/detener la grabación, Q = salir.
-python Modelo_ia\captura_dataset_tramites.py
-
-# 2. Evaluar (mismas personas y persona nueva) y, con --guardar, generar el modelo final
-python Modelo_ia\entrenar_modelo.py --guardar
-```
-
-Las grabaciones se guardan en `dataset_tramites/<seña>/<persona>_NNN.npy`: solo coordenadas de puntos, sin video.
-
-## Diagnóstico
-
-| Herramienta | Para qué |
-|---|---|
-| `iniciar_demo.bat debug` | La ventana del Backend muestra cada seña detectada, su duración y lo que respondió el modelo; además guarda sus puntos en `Pruebas/debug_segmentos/` |
-| `python Pruebas\analizar_segmentos.py` | Compara esas señas en vivo contra el dataset: mano usada, duración, si la seña se cerró bien y a qué grabación se parece |
-| `python Modelo_ia\probar_motor_camara.py` | Prueba el reconocimiento directo con la cámara, sin navegador |
-| `python Modelo_ia\demo_examen.py replay --frase "inscripcion kardex gracias"` | Pasa grabaciones reales por el mismo motor del servidor, sin cámara. Sirve de respaldo si la cámara falla |
-| `python Modelo_ia\detectar_camaras.py` | Lista las cámaras conectadas y cuál se usará |
-
-## Estructura del proyecto
-
-```
-Backend/app/        Servidor: rutas y WebSockets (main.py), motor de reconocimiento (motores.py)
-Frontend/lsm-connect/  Interfaz en React (src/App.jsx)
-Modelo_ia/          Captura del dataset, preprocesamiento, entrenamiento y modelo (lsm_tramites.h5)
-dataset_tramites/   Grabaciones (puntos) por seña y persona
-Pruebas/            Herramientas de diagnóstico
-Docs/               Documentación de las entregas
-iniciar_demo.bat    Arranca servidor + interfaz
-detener_demo.bat    Apaga todo
-```
-
-## Limitaciones y trabajo futuro
-
-- Solo **2 personas** en el dataset: hay que grabar a más, idealmente de la comunidad sorda, y validar las señas con intérpretes.
-- Reconoce **palabras sueltas**, no frases. La LSM tiene su propia gramática y usa expresiones faciales.
-- Mejorar la detección de dónde empieza y termina la seña: algunas señas cortas o hechas con la mano baja se cortan mal, y las de más de 6 s se cortan a la mitad.
-- Separar la pantalla del alumno y la del empleado. El servidor ya tiene el chat en tiempo real (`/ws/chat`).
+- Reconoce **palabras sueltas** (señas o deletreadas), no frases completas con gramática de LSM.
+- La expresión facial se guarda en los datos (subconjunto de la malla facial), pero los modelos aún no la usan.
+- La interfaz manda una imagen a la vez y espera la respuesta: con MediaPipe en CPU se logran ~10–15 imágenes por segundo. Para deletrear rápido conviene una computadora con buen procesador.

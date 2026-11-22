@@ -1,0 +1,128 @@
+{
+  "dominio": "general",
+  "nombre": "General",
+  "descripcion": "Señas que sirven en CUALQUIER ventanilla. Siempre están activas.",
+  "senas": [
+    {
+      "id": "hola",
+      "texto": "Hola"
+    },
+    {
+      "id": "gracias",
+      "texto": "Gracias"
+    },
+    {
+      "id": "por_favor",
+      "texto": "Por favor"
+    },
+    {
+      "id": "si",
+      "texto": "Sí"
+    },
+    {
+      "id": "no",
+      "texto": "No"
+    },
+    {
+      "id": "ayuda",
+      "texto": "Ayuda"
+    },
+    {
+      "id": "no_entiendo",
+      "texto": "No entiendo"
+    },
+    {
+      "id": "repetir",
+      "texto": "Repetir"
+    },
+    {
+      "id": "esperar",
+      "texto": "Esperar"
+    },
+    {
+      "id": "donde",
+      "texto": "¿Dónde?"
+    },
+    {
+      "id": "cuando",
+      "texto": "¿Cuándo?"
+    },
+    {
+      "id": "cuanto",
+      "texto": "¿Cuánto?"
+    },
+    {
+      "id": "que",
+      "texto": "¿Qué?"
+    },
+    {
+      "id": "como",
+      "texto": "¿Cómo?"
+    },
+    {
+      "id": "quiero",
+      "texto": "Quiero"
+    },
+    {
+      "id": "necesito",
+      "texto": "Necesito"
+    },
+    {
+      "id": "tengo",
+      "texto": "Tengo"
+    },
+    {
+      "id": "pagar",
+      "texto": "Pagar"
+    },
+    {
+      "id": "dinero",
+      "texto": "Dinero"
+    },
+    {
+      "id": "documento",
+      "texto": "Documento"
+    },
+    {
+      "id": "hoy",
+      "texto": "Hoy"
+    },
+    {
+      "id": "manana",
+      "texto": "Mañana"
+    },
+    {
+      "id": "nombre",
+      "texto": "Nombre"
+    },
+    {
+      "id": "correo",
+      "texto": "Correo"
+    },
+    {
+      "id": "telefono",
+      "texto": "Teléfono"
+    },
+    {
+      "id": "problema",
+      "texto": "Problema"
+    },
+    {
+      "id": "cita",
+      "texto": "Cita"
+    },
+    {
+      "id": "listo",
+      "texto": "Listo / Terminé"
+    },
+    {
+      "id": "bien",
+      "texto": "Bien"
+    },
+    {
+      "id": "perdon",
+      "texto": "Perdón"
+    }
+  ],
+  "lexico": []
+}

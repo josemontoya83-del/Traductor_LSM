@@ -6,6 +6,9 @@ title LSM-Connect - Iniciador
 rem Uso: doble clic = motor real. Para el simulado: iniciar_demo.bat simulado
 set "MODO=real"
 if /i "%~1"=="simulado" set "MODO=simulado"
+rem Pantallas separadas: iniciar_demo.bat separado = abre la pantalla del alumno y la del empleado
+set "SEPARADO=0"
+if /i "%~1"=="separado" set "SEPARADO=1"
 rem Diagnostico: iniciar_demo.bat debug = motor real + imprime cada seña en la ventana del Backend
 set "LSM_DEBUG=0"
 if /i "%~1"=="debug" set "LSM_DEBUG=1"
@@ -73,7 +76,14 @@ goto esperar_backend
 :backend_listo
 echo Servidor listo.
 :abrir_navegador
-start "" "http://localhost:5173"
+if "%SEPARADO%"=="1" (
+  rem Primero el empleado; el alumno al final para que su pestana (la de la camara) quede activa
+  start "" "http://localhost:5173/?rol=ventanilla"
+  timeout /t 2 /nobreak >nul
+  start "" "http://localhost:5173/?rol=estudiante"
+) else (
+  start "" "http://localhost:5173"
+)
 
 echo.
 echo Listo. Se abrieron dos ventanas negras (Backend y Frontend): dejalas abiertas.

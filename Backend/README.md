@@ -51,7 +51,7 @@ async function enviarSiguiente() {
 
 ### `WS /ws/chat?rol=estudiante|ventanilla&sala=principal`
 
-- **Front → backend:** `{"texto": "Hola"}` (máx. 500 caracteres).
+- **Front → backend:** `{"texto": "Hola"}` (máx. 500 caracteres). `{"borrar": true}` quita el último mensaje de ese rol y manda a todos el historial actualizado.
 - **Backend → front:** al conectar llega `{"tipo":"historial","mensajes":[...]}`; después cada mensaje de la sala:
 
 ```json

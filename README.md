@@ -60,9 +60,20 @@ Las librerías de la interfaz (`npm install`) se instalan solas la primera vez q
 | Iniciar el demo (modelo real) | Doble clic en `iniciar_demo.bat` |
 | Iniciar con predicciones simuladas (sin modelo) | `iniciar_demo.bat simulado` |
 | Iniciar en modo diagnóstico | `iniciar_demo.bat debug` (ver [Diagnóstico](#diagnóstico)) |
+| Iniciar con pantallas separadas (alumno y empleado) | `iniciar_demo.bat separado` |
 | Apagar todo | Doble clic en `detener_demo.bat` |
 
 `iniciar_demo.bat` abre dos ventanas negras (**LSM Backend** y **LSM Frontend**), espera a que el servidor cargue el modelo (unos 25 s) y abre `http://localhost:5173` en el navegador. No cierres las ventanas negras mientras uses el demo.
+
+### Pantallas
+
+| Dirección | Qué muestra |
+|---|---|
+| `http://localhost:5173` | Alumno y empleado en la misma pantalla (para el demo) |
+| `http://localhost:5173/?rol=estudiante` | Solo la pantalla del alumno: cámara, palabras y respuestas del empleado |
+| `http://localhost:5173/?rol=ventanilla` | Solo la pantalla del empleado: traducción, respuestas rápidas y la conversación completa |
+
+Las dos pantallas se comunican por el chat del servidor (`/ws/chat`): cada seña reconocida llega al empleado y cada respuesta llega al alumno. Por ejemplo, con dos monitores en la ventanilla, uno mira hacia el alumno y el otro hacia el empleado. "Nueva atención" limpia las dos.
 
 <details>
 <summary>Arrancar a mano, sin el .bat</summary>
@@ -150,4 +161,4 @@ detener_demo.bat    Apaga todo
 - Solo **2 personas** en el dataset: hay que grabar a más, idealmente de la comunidad sorda, y validar las señas con intérpretes.
 - Reconoce **palabras sueltas**, no frases. La LSM tiene su propia gramática y usa expresiones faciales.
 - Mejorar la detección de dónde empieza y termina la seña: algunas señas cortas o hechas con la mano baja se cortan mal, y las de más de 6 s se cortan a la mitad.
-- Separar la pantalla del alumno y la del empleado. El servidor ya tiene el chat en tiempo real (`/ws/chat`).
+- Las pantallas separadas funcionan en la misma computadora. Para usarlas en dos computadoras hay que abrir el servidor a la red local (`--host 0.0.0.0` y `VITE_API_URL`).

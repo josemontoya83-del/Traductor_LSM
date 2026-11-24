@@ -2,20 +2,24 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { WS, API, SALA } from "../config.js";
 
 /**
- * Conexión al chat del backend. Se reconecta sola si se cae.
- * estado: "conectando" | "conectado" | "caido"
+ * Conexión al chat del backend (/ws/chat). Se reconecta sola si se cae.
+ * Con esto se comunican la pantalla del alumno y la del empleado: lo que reconoce la cámara
+ * se manda como mensaje del "estudiante" y las respuestas como mensajes de "ventanilla".
  *
- * TODAVÍA NO SE USA: App.jsx muestra alumno y empleado en una sola pantalla. Este hook,
- * pantallas/Chat.jsx y componentes/ListaMensajes.jsx son la base para separar la pantalla
- * del alumno y la del empleado (pendiente de la entrega final).
+ * activo: false = no se conecta (por ejemplo, la pantalla del empleado no manda como alumno).
+ * estado: "apagado" | "conectando" | "conectado" | "caido"
  */
-export function useChat(rol) {
+export function useChat(rol, activo = true) {
   const [mensajes, setMensajes] = useState([]);
-  const [estado, setEstado] = useState("conectando");
+  const [estado, setEstado] = useState(activo ? "conectando" : "apagado");
   const [cerrada, setCerrada] = useState(0); // sube en 1 cada vez que se cierra la atención
   const wsRef = useRef(null);
 
   useEffect(() => {
+    if (!activo) {
+      setEstado("apagado");
+      return;
+    }
     let vivo = true;
     let temporizador;
 
@@ -46,14 +50,20 @@ export function useChat(rol) {
       clearTimeout(temporizador);
       wsRef.current?.close();
     };
-  }, [rol]);
+  }, [rol, activo]);
+
+  const mandar = useCallback((datos) => {
+    if (wsRef.current?.readyState !== WebSocket.OPEN) return false;
+    wsRef.current.send(JSON.stringify(datos));
+    return true;
+  }, []);
 
   const enviar = useCallback((texto) => {
     const limpio = texto.trim();
-    if (!limpio || wsRef.current?.readyState !== WebSocket.OPEN) return false;
-    wsRef.current.send(JSON.stringify({ texto: limpio }));
-    return true;
-  }, []);
+    return limpio ? mandar({ texto: limpio }) : false;
+  }, [mandar]);
+
+  const borrarUltimo = useCallback(() => mandar({ borrar: true }), [mandar]);
 
   const cerrarAtencion = useCallback(async () => {
     try {
@@ -63,5 +73,5 @@ export function useChat(rol) {
     }
   }, []);
 
-  return { mensajes, estado, enviar, cerrarAtencion, cerrada };
+  return { mensajes, estado, enviar, borrarUltimo, cerrarAtencion, cerrada };
 }

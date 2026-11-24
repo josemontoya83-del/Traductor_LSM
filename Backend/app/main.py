@@ -111,9 +111,21 @@ async def ws_chat(ws: WebSocket, rol: str = "estudiante", sala: str = "principal
     try:
         while True:
             try:
-                texto = str((await ws.receive_json()).get("texto", "")).strip()[:MAX_TEXTO]
-            except (json.JSONDecodeError, AttributeError):
+                entrada = await ws.receive_json()
+            except json.JSONDecodeError:
                 continue
+            if not isinstance(entrada, dict):
+                continue
+            if entrada.get("borrar"):
+                # {"borrar": true}: quita el último mensaje de ESTE rol y manda el historial nuevo
+                hist = salas.historial[sala]
+                for i in range(len(hist) - 1, -1, -1):
+                    if hist[i]["rol"] == rol:
+                        del hist[i]
+                        break
+                await salas.difundir(sala, {"tipo": "historial", "mensajes": list(hist)})
+                continue
+            texto = str(entrada.get("texto", "")).strip()[:MAX_TEXTO]
             if not texto:
                 continue
             try:
